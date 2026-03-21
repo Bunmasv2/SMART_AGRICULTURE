@@ -33,6 +33,10 @@ public class InventoryBatchService {
         return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
     }
 
+    public List<InventoryBatchDto> findByCategory(String category) {
+        return inventoryBatchRepository.findByItemCategory(category).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+    }
+
     public Optional<InventoryBatchDto> findById(Long id) {
         return inventoryBatchRepository.findById(id).map(inventoryBatchMapper::toDto);
     }

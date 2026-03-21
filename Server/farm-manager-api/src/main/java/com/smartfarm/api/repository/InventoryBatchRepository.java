@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface InventoryBatchRepository extends JpaRepository<InventoryBatch, Long> {
     List<InventoryBatch> findByItemItemId(Long itemId);
+    List<InventoryBatch> findByItemCategory(String category);
 }

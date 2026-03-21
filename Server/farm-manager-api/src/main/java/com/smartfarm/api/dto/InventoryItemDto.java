@@ -12,4 +12,6 @@ public class InventoryItemDto {
     private String category;
     private String unit;
     private Double minThreshold;
+    private Long cropId;
+    private String cropName;
 }

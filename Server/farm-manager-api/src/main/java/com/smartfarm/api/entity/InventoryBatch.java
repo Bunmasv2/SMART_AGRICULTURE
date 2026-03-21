@@ -34,4 +34,10 @@ public class InventoryBatch {
 
     @Column(name = "received_date")
     private LocalDateTime receivedDate;
+
+    @Column(name = "production_date")
+    private LocalDate productionDate;
+
+    @Column(name = "germination_rate")
+    private Double germinationRate;
 }

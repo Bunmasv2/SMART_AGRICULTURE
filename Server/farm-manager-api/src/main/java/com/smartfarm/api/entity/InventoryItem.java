@@ -28,4 +28,8 @@ public class InventoryItem {
 
     @Column(name = "min_threshold")
     private Double minThreshold;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "crop_id")
+    private Crop crop;
 }

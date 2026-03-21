@@ -24,11 +24,17 @@ public class InventoryBatchController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InventoryBatchDto>>> getAll(
-            @RequestParam(required = false) Long itemId) {
+            @RequestParam(required = false) Long itemId,
+            @RequestParam(required = false) String category) {
         try {
-            List<InventoryBatchDto> data = (itemId != null)
-                    ? inventoryBatchService.findByItemId(itemId)
-                    : inventoryBatchService.findAll();
+            List<InventoryBatchDto> data;
+            if (itemId != null) {
+                data = inventoryBatchService.findByItemId(itemId);
+            } else if (category != null) {
+                data = inventoryBatchService.findByCategory(category);
+            } else {
+                data = inventoryBatchService.findAll();
+            }
             return ResponseEntity.ok(ApiResponse.success(data));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
