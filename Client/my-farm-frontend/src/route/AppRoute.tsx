@@ -1,0 +1,49 @@
+import { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from '../components/layout/MainLayout';
+
+const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
+const Batches = lazy(() => import('../pages/batches/BatchList'));
+const BatchCreation = lazy(() => import('../pages/batches/BatchCreation'));
+const BatchLifecycle = lazy(() => import('../pages/batches/BatchLifecycle'));
+const Processes = lazy(() => import('../pages/processes/GrowthProcess'));
+const Inventory = lazy(() => import('../pages/inventory/Inventory'));
+const Tasks = lazy(() => import('../pages/tasks/TaskManagement'));
+const Calendar = lazy(() => import('../pages/tasks/FarmingCalendar'));
+const AIAssistant = lazy(() => import('../pages/ai-assistant/ImageAnalysis'));
+const Settings = lazy(() => import('../pages/settings/Settings'));
+
+const AppRoutes = () => {
+    return (
+        <BrowserRouter>
+            <Suspense fallback={<div className="flex h-screen items-center justify-center font-medium text-[#2c9b4e]">Loading Agrikon...</div>}>
+                <Routes>
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<Dashboard />} />
+
+                        <Route path="/batches">
+                            <Route index element={<Batches />} />
+                            <Route path="create" element={<BatchCreation />} />
+                            <Route path="lifecycle/:id" element={<BatchLifecycle />} />
+                        </Route>
+
+                        <Route path="/processes" element={<Processes />} />
+
+                        <Route path="/inventory" element={<Inventory />} />
+
+                        <Route path="/tasks" element={<Tasks />} />
+                        <Route path="/calendar" element={<Calendar />} />
+
+                        <Route path="/ai-assistant" element={<AIAssistant />} />
+
+                        <Route path="/settings" element={<Settings />} />
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
+        </BrowserRouter>
+    );
+};
+
+export default AppRoutes;
