@@ -1,0 +1,55 @@
+package com.smartfarm.api.service;
+
+import com.smartfarm.api.dto.GrowthProcessDto;
+import com.smartfarm.api.entity.GrowthProcess;
+import com.smartfarm.api.mapper.GrowthProcessMapper;
+import com.smartfarm.api.repository.GrowthProcessRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class GrowthProcessService {
+
+    private final GrowthProcessRepository growthProcessRepository;
+    private final GrowthProcessMapper growthProcessMapper;
+
+    @Autowired
+    public GrowthProcessService(GrowthProcessRepository growthProcessRepository, GrowthProcessMapper growthProcessMapper) {
+        this.growthProcessRepository = growthProcessRepository;
+        this.growthProcessMapper = growthProcessMapper;
+    }
+
+    public List<GrowthProcessDto> findAll() {
+        return growthProcessRepository.findAll().stream().map(growthProcessMapper::toDto).collect(Collectors.toList());
+    }
+
+    public List<GrowthProcessDto> findByCropId(Long cropId) {
+        return growthProcessRepository.findByCropCropId(cropId).stream().map(growthProcessMapper::toDto).collect(Collectors.toList());
+    }
+
+    public Optional<GrowthProcessDto> findById(Long id) {
+        return growthProcessRepository.findById(id).map(growthProcessMapper::toDto);
+    }
+
+    public GrowthProcessDto create(GrowthProcessDto dto) {
+        GrowthProcess entity = growthProcessMapper.toEntity(dto);
+        return growthProcessMapper.toDto(growthProcessRepository.save(entity));
+    }
+
+    public Optional<GrowthProcessDto> update(Long id, GrowthProcessDto dto) {
+        if (!growthProcessRepository.existsById(id)) return Optional.empty();
+        GrowthProcess entity = growthProcessMapper.toEntity(dto);
+        entity.setProcessId(id);
+        return Optional.of(growthProcessMapper.toDto(growthProcessRepository.save(entity)));
+    }
+
+    public boolean deleteById(Long id) {
+        if (!growthProcessRepository.existsById(id)) return false;
+        growthProcessRepository.deleteById(id);
+        return true;
+    }
+}
