@@ -1,0 +1,19 @@
+package com.smartfarm.api.dto;
+
+import lombok.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class InventoryBatchDto {
+    private Long batchInvId;
+    private Long itemId;
+    private String itemName;
+    private String supplier;
+    private Double quantity;
+    private LocalDate expiryDate;
+    private LocalDateTime receivedDate;
+}
