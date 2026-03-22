@@ -19,12 +19,13 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     // Nhóm các route lại để Sidebar gọn gàng hơn
     const menuItems = [
         { name: 'Dashboard', path: '/', icon: HomeIcon },
-        { name: 'Lô trồng', path: '/lo-trong', icon: MapIcon },
-        { name: 'Quy trình', path: '/quy-trinh', icon: DocumentChartBarIcon },
-        { name: 'Kho vật tư', path: '/kho-vat-tu', icon: ArchiveBoxIcon },
-        { name: 'Công việc & Lịch', path: '/cong-viec', icon: CalendarDaysIcon },
+        { name: 'Lô trồng', path: '/batches', icon: MapIcon },
+        { name: 'Quy trình', path: '/processes', icon: DocumentChartBarIcon },
+        { name: 'Kho vật tư', path: '/inventory', icon: ArchiveBoxIcon },
+        { name: 'Công việc', path: '/tasks', icon: CalendarDaysIcon },
+        { name: 'Lịch', path: '/calendar', icon: CalendarDaysIcon },
         { name: 'Trợ lý AI', path: '/ai-assistant', icon: SparklesIcon },
-        { name: 'Hệ thống', path: '/he-thong', icon: Cog6ToothIcon },
+        { name: 'Hệ thống', path: '/settings', icon: Cog6ToothIcon },
     ];
 
     return (
