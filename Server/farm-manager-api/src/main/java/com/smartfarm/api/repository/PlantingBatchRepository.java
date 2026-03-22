@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PlantingBatchRepository extends JpaRepository<PlantingBatch, Long> {
+public interface PlantingBatchRepository extends JpaRepository<PlantingBatch, Integer> {
     List<PlantingBatch> findByStatus(String status);
-    List<PlantingBatch> findByCropCropId(Long cropId);
+    List<PlantingBatch> findByCropCropId(Integer cropId);
 }

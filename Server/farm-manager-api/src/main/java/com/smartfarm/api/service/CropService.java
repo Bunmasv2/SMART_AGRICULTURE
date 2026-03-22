@@ -29,7 +29,7 @@ public class CropService {
         return cropRepository.findAll().stream().map(cropMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<CropDto> findById(Long id) {
+    public Optional<CropDto> findById(Integer id) {
         return cropRepository.findById(id).map(cropMapper::toDto);
     }
 
@@ -38,14 +38,14 @@ public class CropService {
         return cropMapper.toDto(cropRepository.save(entity));
     }
 
-    public Optional<CropDto> update(Long id, CropDto dto) {
+    public Optional<CropDto> update(Integer id, CropDto dto) {
         if (!cropRepository.existsById(id)) return Optional.empty();
         Crop entity = cropMapper.toEntity(dto);
         entity.setCropId(id);
         return Optional.of(cropMapper.toDto(cropRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!cropRepository.existsById(id)) return false;
         cropRepository.deleteById(id);
         return true;

@@ -33,7 +33,7 @@ public class CropController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CropDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CropDto>> getById(@PathVariable Integer id) {
         return cropService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -52,7 +52,7 @@ public class CropController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CropDto>> update(@PathVariable Long id, @RequestBody CropDto dto) {
+    public ResponseEntity<ApiResponse<CropDto>> update(@PathVariable Integer id, @RequestBody CropDto dto) {
         try {
             return cropService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Crop updated successfully")))
@@ -65,7 +65,7 @@ public class CropController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (cropService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "Crop deleted successfully"));

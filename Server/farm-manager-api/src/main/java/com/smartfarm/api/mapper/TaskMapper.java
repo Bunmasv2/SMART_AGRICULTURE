@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TaskMapper {
     public TaskDto toDto(Task entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         TaskDto dto = TaskDto.builder()
                 .taskId(entity.getTaskId())
                 .title(entity.getTitle())
@@ -35,7 +36,8 @@ public class TaskMapper {
     }
 
     public Task toEntity(TaskDto dto) {
-        if (dto == null) return null;
+        if (dto == null)
+            return null;
         Task entity = Task.builder()
                 .taskId(dto.getTaskId())
                 .title(dto.getTitle())

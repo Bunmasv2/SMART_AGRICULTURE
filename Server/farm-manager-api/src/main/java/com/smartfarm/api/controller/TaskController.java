@@ -24,8 +24,8 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<TaskDto>>> getAll(
-            @RequestParam(required = false) Long pBatchId,
-            @RequestParam(required = false) Long assignedTo,
+            @RequestParam(required = false) Integer pBatchId,
+            @RequestParam(required = false) Integer assignedTo,
             @RequestParam(required = false) String status) {
         try {
             List<TaskDto> data;
@@ -46,7 +46,7 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TaskDto>> getById(@PathVariable Integer id) {
         return taskService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -65,7 +65,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskDto>> update(@PathVariable Long id, @RequestBody TaskDto dto) {
+    public ResponseEntity<ApiResponse<TaskDto>> update(@PathVariable Integer id, @RequestBody TaskDto dto) {
         try {
             return taskService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Task updated successfully")))
@@ -78,7 +78,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (taskService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "Task deleted successfully"));

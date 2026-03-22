@@ -24,7 +24,7 @@ public class StageController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StageDto>>> getAll(
-            @RequestParam(required = false) Long processId) {
+            @RequestParam(required = false) Integer processId) {
         try {
             List<StageDto> data = (processId != null)
                     ? stageService.findByProcessId(processId)
@@ -37,7 +37,7 @@ public class StageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StageDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<StageDto>> getById(@PathVariable Integer id) {
         return stageService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,7 @@ public class StageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StageDto>> update(@PathVariable Long id, @RequestBody StageDto dto) {
+    public ResponseEntity<ApiResponse<StageDto>> update(@PathVariable Integer id, @RequestBody StageDto dto) {
         try {
             return stageService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Stage updated successfully")))
@@ -69,7 +69,7 @@ public class StageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (stageService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "Stage deleted successfully"));

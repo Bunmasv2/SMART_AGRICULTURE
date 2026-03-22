@@ -33,7 +33,7 @@ public class PlantingBatchService {
         return plantingBatchRepository.findByStatus(status).stream().map(plantingBatchMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<PlantingBatchDto> findById(Long id) {
+    public Optional<PlantingBatchDto> findById(Integer id) {
         return plantingBatchRepository.findById(id).map(plantingBatchMapper::toDto);
     }
 
@@ -42,14 +42,14 @@ public class PlantingBatchService {
         return plantingBatchMapper.toDto(plantingBatchRepository.save(entity));
     }
 
-    public Optional<PlantingBatchDto> update(Long id, PlantingBatchDto dto) {
+    public Optional<PlantingBatchDto> update(Integer id, PlantingBatchDto dto) {
         if (!plantingBatchRepository.existsById(id)) return Optional.empty();
         PlantingBatch entity = plantingBatchMapper.toEntity(dto);
         entity.setPBatchId(id);
         return Optional.of(plantingBatchMapper.toDto(plantingBatchRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!plantingBatchRepository.existsById(id)) return false;
         plantingBatchRepository.deleteById(id);
         return true;

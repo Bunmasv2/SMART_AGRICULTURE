@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface InventoryBatchRepository extends JpaRepository<InventoryBatch, Long> {
-    List<InventoryBatch> findByItemItemId(Long itemId);
+public interface InventoryBatchRepository extends JpaRepository<InventoryBatch, Integer> {
+    List<InventoryBatch> findByItemItemId(Integer itemId);
     List<InventoryBatch> findByItemCategory(String category);
 }

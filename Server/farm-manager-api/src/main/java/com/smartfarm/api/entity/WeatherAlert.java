@@ -16,7 +16,7 @@ public class WeatherAlert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "alert_id")
-    private Long alertId;
+    private Integer alertId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_batch_id")

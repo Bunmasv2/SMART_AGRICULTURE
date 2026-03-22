@@ -24,7 +24,7 @@ public class AiAnalysisController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<AiAnalysisDto>>> getAll(
-            @RequestParam(required = false) Long pBatchId) {
+            @RequestParam(required = false) Integer pBatchId) {
         try {
             List<AiAnalysisDto> data = (pBatchId != null)
                     ? aiAnalysisService.findByBatchId(pBatchId)

@@ -8,11 +8,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlantingBatchDto {
-    private Long pBatchId;
+    private Integer pBatchId;
     private String batchName;
-    private Long cropId;
+    private Integer cropId;
     private String cropName;
-    private Long processId;
+    private Integer processId;
     private String processName;
     private Double areaM2;
     private String locationCoords;

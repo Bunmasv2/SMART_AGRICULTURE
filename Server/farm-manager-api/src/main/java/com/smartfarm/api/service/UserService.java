@@ -29,7 +29,7 @@ public class UserService {
         return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<UserDto> findById(Long id) {
+    public Optional<UserDto> findById(Integer id) {
         return userRepository.findById(id).map(userMapper::toDto);
     }
 
@@ -38,17 +38,14 @@ public class UserService {
         return userMapper.toDto(userRepository.save(entity));
     }
 
-    public Optional<UserDto> update(Long id, UserDto dto) {
-        return userRepository.findById(id).map(existing -> {
-            User entity = userMapper.toEntity(dto);
-            entity.setUserId(id);
-            // Preserve the existing passwordHash if not provided in the update
-            entity.setPasswordHash(existing.getPasswordHash());
-            return userMapper.toDto(userRepository.save(entity));
-        });
+    public Optional<UserDto> update(Integer id, UserDto dto) {
+        if (!userRepository.existsById(id)) return Optional.empty();
+        User entity = userMapper.toEntity(dto);
+        entity.setUserId(id);
+        return Optional.of(userMapper.toDto(userRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!userRepository.existsById(id)) return false;
         userRepository.deleteById(id);
         return true;

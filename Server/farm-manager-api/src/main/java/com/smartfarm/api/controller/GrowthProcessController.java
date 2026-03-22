@@ -24,7 +24,7 @@ public class GrowthProcessController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<GrowthProcessDto>>> getAll(
-            @RequestParam(required = false) Long cropId) {
+            @RequestParam(required = false) Integer cropId) {
         try {
             List<GrowthProcessDto> data = (cropId != null)
                     ? growthProcessService.findByCropId(cropId)
@@ -37,7 +37,7 @@ public class GrowthProcessController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<GrowthProcessDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<GrowthProcessDto>> getById(@PathVariable Integer id) {
         return growthProcessService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,7 @@ public class GrowthProcessController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(@PathVariable Long id, @RequestBody GrowthProcessDto dto) {
+    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(@PathVariable Integer id, @RequestBody GrowthProcessDto dto) {
         try {
             return growthProcessService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "GrowthProcess updated successfully")))
@@ -69,7 +69,7 @@ public class GrowthProcessController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (growthProcessService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "GrowthProcess deleted successfully"));
