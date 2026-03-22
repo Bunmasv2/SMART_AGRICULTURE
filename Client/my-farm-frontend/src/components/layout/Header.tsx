@@ -1,4 +1,5 @@
 import { BellIcon, UserCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 
 export default function Header() {
     return (
@@ -28,9 +29,9 @@ export default function Header() {
                     {/* Chấm đỏ cảnh báo/thông báo */}
                     <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
-                <button className="flex items-center gap-2 text-gray-600 hover:text-[#2c9b4e]">
+                <Link to="/login" className="flex items-center gap-2 text-gray-600 hover:text-[#2c9b4e]">
                     <UserCircleIcon className="h-8 w-8" />
-                </button>
+                </Link>
             </div>
         </header>
     );
