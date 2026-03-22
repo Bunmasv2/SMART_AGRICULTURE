@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register: React.FC = () => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (password !== confirmPassword) {
+            setError('Mật khẩu nhập lại không khớp');
+            return;
+        }
+
         setLoading(true);
         setError('');
         try {
@@ -87,14 +97,40 @@ const Register: React.FC = () => {
                                 className="w-full bg-[#2c5d3d] border-none rounded-lg px-4 py-3 text-white placeholder-[#a8c69f] focus:ring-2 focus:ring-[#4ade80] outline-none transition-all"
                                 placeholder="Địa chỉ Email"
                             />
-                            <input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-[#2c5d3d] border-none rounded-lg px-4 py-3 text-white placeholder-[#a8c69f] focus:ring-2 focus:ring-[#4ade80] outline-none transition-all"
-                                placeholder="Mật khẩu"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-[#2c5d3d] border-none rounded-lg px-4 py-3 text-white placeholder-[#a8c69f] focus:ring-2 focus:ring-[#4ade80] outline-none transition-all pr-12"
+                                    placeholder="Mật khẩu"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#a8c69f] hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full bg-[#2c5d3d] border-none rounded-lg px-4 py-3 text-white placeholder-[#a8c69f] focus:ring-2 focus:ring-[#4ade80] outline-none transition-all pr-12"
+                                    placeholder="Nhập lại mật khẩu"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#a8c69f] hover:text-white transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="pt-2">

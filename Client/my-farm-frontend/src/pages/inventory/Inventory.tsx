@@ -24,10 +24,10 @@ interface SeedBatch {
     cropId?: number;
     cropName?: string;
     supplier: string;
-    quantity: number;
+    quantity: number | '';
     expiryDate: string;
     productionDate: string;
-    germinationRate: number;
+    germinationRate: number | '';
     receivedDate?: string;
 }
 
@@ -97,32 +97,27 @@ export default function Inventory() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Convert empty strings back to 0 for submission
+            const submissionData = {
+                ...formData,
+                quantity: formData.quantity === '' ? 0 : formData.quantity,
+                germinationRate: formData.germinationRate === '' ? 0 : formData.germinationRate
+            };
+
             if (editingSeed) {
-                // Update Batch
-                await axios.put(`/inventory-batches/${editingSeed.batchInvId}`, formData);
-                
-                // Also update Item if Name/Crop changed (Simplification: we assume item metadata update is handled or not needed for now)
-                // In a real app, you might need to update the Item entity too if itemName/cropId changed.
+                await axios.put(`/inventory-batches/${editingSeed.batchInvId}`, submissionData);
             } else {
-                // Create logic:
-                // 1. Create/Find Item
-                // For simplicity, the backend should handle item creation if itemId is null, 
-                // but our current backend expects an itemId or existing item.
-                // Let's create the item first if needed.
-                
-                // Step 1: Create/Find InventoryItem
                 const itemRes = await axios.post(`/inventory-items`, {
                     itemName: formData.itemName,
                     category: 'SEED',
-                    unit: 'kg', // Default unit
+                    unit: 'kg',
                     cropId: formData.cropId
                 });
                 
                 const newItem = itemRes.data.data;
 
-                // Step 2: Create Batch
                 await axios.post(`/inventory-batches`, {
-                    ...formData,
+                    ...submissionData,
                     itemId: newItem.itemId
                 });
             }
@@ -186,13 +181,13 @@ export default function Inventory() {
                     />
                     <StatCard 
                         title="Tổng tồn kho" 
-                        value={`${seeds.reduce((acc, s) => acc + s.quantity, 0)} kg`} 
+                        value={`${seeds.reduce((acc, s) => acc + (Number(s.quantity) || 0), 0)} kg`} 
                         icon={<ArchiveBoxIcon />} 
                         color="blue" 
                     />
                     <StatCard 
                         title="Tỷ lệ nảy mầm TB" 
-                        value={`${seeds.length ? Math.round(seeds.reduce((acc, s) => acc + s.germinationRate, 0) / seeds.length) : 0}%`} 
+                        value={`${seeds.length ? Math.round(seeds.reduce((acc, s) => acc + (Number(s.germinationRate) || 0), 0) / seeds.length) : 0}%`} 
                         icon={<BeakerIcon />} 
                         color="indigo" 
                     />
@@ -358,8 +353,17 @@ export default function Inventory() {
                                         required
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         value={formData.quantity}
-                                        onChange={(e) => setFormData({...formData, quantity: Number(e.target.value)})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setFormData({...formData, quantity: ''});
+                                                return;
+                                            }
+                                            const num = parseFloat(val);
+                                            setFormData({...formData, quantity: isNaN(num) ? 0 : Math.max(0, num)});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500/20 font-bold text-slate-700"
                                     />
                                 </div>
@@ -390,11 +394,31 @@ export default function Inventory() {
                                             type="range"
                                             min="0"
                                             max="100"
-                                            value={formData.germinationRate}
-                                            onChange={(e) => setFormData({...formData, germinationRate: Number(e.target.value)})}
+                                            value={formData.germinationRate === '' ? 0 : formData.germinationRate}
+                                            onChange={(e) => {
+                                                setFormData({...formData, germinationRate: Number(e.target.value)});
+                                            }}
                                             className="flex-grow accent-green-600"
                                         />
-                                        <span className="w-16 text-center font-black text-slate-700 bg-slate-50 py-2 rounded-xl border border-slate-100">{formData.germinationRate}%</span>
+                                        <div className="relative w-20">
+                                            <input 
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                value={formData.germinationRate}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === '') {
+                                                        setFormData({...formData, germinationRate: ''});
+                                                        return;
+                                                    }
+                                                    const num = parseInt(val);
+                                                    setFormData({...formData, germinationRate: isNaN(num) ? 0 : Math.min(100, Math.max(0, num))});
+                                                }}
+                                                className="w-full text-center font-black text-slate-700 bg-slate-50 py-2 rounded-xl border border-slate-100 focus:ring-2 focus:ring-green-500/20 outline-none"
+                                            />
+                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs">%</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

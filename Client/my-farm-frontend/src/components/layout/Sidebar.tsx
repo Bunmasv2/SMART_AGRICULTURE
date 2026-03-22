@@ -21,12 +21,11 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         { name: 'Dashboard', path: '/', icon: HomeIcon },
         { name: 'Lô trồng', path: '/lo-trong', icon: MapIcon },
         { name: 'Quy trình', path: '/quy-trinh', icon: DocumentChartBarIcon },
-        { name: 'Kho vật tư', path: '/kho-vat-tu', icon: ArchiveBoxIcon },
+        { name: 'Kho vật tư', path: '/inventory', icon: ArchiveBoxIcon },
         { name: 'Công việc & Lịch', path: '/cong-viec', icon: CalendarDaysIcon },
         { name: 'Trợ lý AI', path: '/ai-assistant', icon: SparklesIcon },
         { name: 'Hệ thống', path: '/he-thong', icon: Cog6ToothIcon },
     ];
-
     return (
         <aside className={`flex flex-col h-full bg-white border-r border-gray-100 ${className}`}>
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
