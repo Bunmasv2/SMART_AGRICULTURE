@@ -29,4 +29,11 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @Column(name = "verification_code", length = 6)
+    private String verificationCode;
+
+    @Builder.Default
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
 }
