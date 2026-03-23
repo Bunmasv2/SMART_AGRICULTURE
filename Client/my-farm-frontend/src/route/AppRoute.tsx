@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+import BatchDetail from '../pages/batches/BatchDetail';
 
 const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
 const Batches = lazy(() => import('../pages/batches/BatchList'));
@@ -23,6 +24,7 @@ const AppRoutes = () => {
 
                         <Route path="/batches">
                             <Route index element={<Batches />} />
+                            <Route path=":id" element={<BatchDetail />} />
                             <Route path="create" element={<BatchCreation />} />
                             <Route path="lifecycle/:id" element={<BatchLifecycle />} />
                         </Route>

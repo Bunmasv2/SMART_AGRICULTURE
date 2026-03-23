@@ -13,3 +13,4 @@ public class GrowthProcessDto {
     private String processName;
     private Integer totalDays;
 }
+

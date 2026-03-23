@@ -1,5 +1,6 @@
 package com.smartfarm.api.service;
 
+import com.smartfarm.api.dto.GrowthProcessDetailDto;
 import com.smartfarm.api.dto.GrowthProcessDto;
 import com.smartfarm.api.entity.GrowthProcess;
 import com.smartfarm.api.mapper.GrowthProcessMapper;
@@ -20,7 +21,8 @@ public class GrowthProcessService {
     private final GrowthProcessMapper growthProcessMapper;
 
     @Autowired
-    public GrowthProcessService(GrowthProcessRepository growthProcessRepository, GrowthProcessMapper growthProcessMapper) {
+    public GrowthProcessService(GrowthProcessRepository growthProcessRepository,
+            GrowthProcessMapper growthProcessMapper) {
         this.growthProcessRepository = growthProcessRepository;
         this.growthProcessMapper = growthProcessMapper;
     }
@@ -30,7 +32,8 @@ public class GrowthProcessService {
     }
 
     public List<GrowthProcessDto> findByCropId(Long cropId) {
-        return growthProcessRepository.findByCropCropId(cropId).stream().map(growthProcessMapper::toDto).collect(Collectors.toList());
+        return growthProcessRepository.findByCropCropId(cropId).stream().map(growthProcessMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<GrowthProcessDto> findById(Long id) {
@@ -43,15 +46,21 @@ public class GrowthProcessService {
     }
 
     public Optional<GrowthProcessDto> update(Long id, GrowthProcessDto dto) {
-        if (!growthProcessRepository.existsById(id)) return Optional.empty();
+        if (!growthProcessRepository.existsById(id))
+            return Optional.empty();
         GrowthProcess entity = growthProcessMapper.toEntity(dto);
         entity.setProcessId(id);
         return Optional.of(growthProcessMapper.toDto(growthProcessRepository.save(entity)));
     }
 
     public boolean deleteById(Long id) {
-        if (!growthProcessRepository.existsById(id)) return false;
+        if (!growthProcessRepository.existsById(id))
+            return false;
         growthProcessRepository.deleteById(id);
         return true;
+    }
+
+    public Optional<GrowthProcessDetailDto> findDetailById(Long id) {
+        return growthProcessRepository.findById(id).map(growthProcessMapper::toDetailDto);
     }
 }

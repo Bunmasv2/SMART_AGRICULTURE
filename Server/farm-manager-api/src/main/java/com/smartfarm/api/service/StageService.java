@@ -1,6 +1,7 @@
 package com.smartfarm.api.service;
 
 import com.smartfarm.api.dto.StageDto;
+import com.smartfarm.api.dto.StageSimpleDto;
 import com.smartfarm.api.entity.Stage;
 import com.smartfarm.api.mapper.StageMapper;
 import com.smartfarm.api.repository.StageRepository;
@@ -30,7 +31,13 @@ public class StageService {
     }
 
     public List<StageDto> findByProcessId(Long processId) {
-        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toDto).collect(Collectors.toList());
+        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<StageSimpleDto> findSimpleByProcessId(Long processId) {
+        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toSimpleDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<StageDto> findById(Long id) {
@@ -43,14 +50,16 @@ public class StageService {
     }
 
     public Optional<StageDto> update(Long id, StageDto dto) {
-        if (!stageRepository.existsById(id)) return Optional.empty();
+        if (!stageRepository.existsById(id))
+            return Optional.empty();
         Stage entity = stageMapper.toEntity(dto);
         entity.setStageId(id);
         return Optional.of(stageMapper.toDto(stageRepository.save(entity)));
     }
 
     public boolean deleteById(Long id) {
-        if (!stageRepository.existsById(id)) return false;
+        if (!stageRepository.existsById(id))
+            return false;
         stageRepository.deleteById(id);
         return true;
     }

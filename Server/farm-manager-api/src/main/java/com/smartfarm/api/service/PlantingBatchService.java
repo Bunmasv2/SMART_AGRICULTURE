@@ -20,7 +20,8 @@ public class PlantingBatchService {
     private final PlantingBatchMapper plantingBatchMapper;
 
     @Autowired
-    public PlantingBatchService(PlantingBatchRepository plantingBatchRepository, PlantingBatchMapper plantingBatchMapper) {
+    public PlantingBatchService(PlantingBatchRepository plantingBatchRepository,
+            PlantingBatchMapper plantingBatchMapper) {
         this.plantingBatchRepository = plantingBatchRepository;
         this.plantingBatchMapper = plantingBatchMapper;
     }
@@ -30,7 +31,8 @@ public class PlantingBatchService {
     }
 
     public List<PlantingBatchDto> findByStatus(String status) {
-        return plantingBatchRepository.findByStatus(status).stream().map(plantingBatchMapper::toDto).collect(Collectors.toList());
+        return plantingBatchRepository.findByStatus(status).stream().map(plantingBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<PlantingBatchDto> findById(Long id) {
@@ -43,15 +45,22 @@ public class PlantingBatchService {
     }
 
     public Optional<PlantingBatchDto> update(Long id, PlantingBatchDto dto) {
-        if (!plantingBatchRepository.existsById(id)) return Optional.empty();
+        if (!plantingBatchRepository.existsById(id))
+            return Optional.empty();
         PlantingBatch entity = plantingBatchMapper.toEntity(dto);
         entity.setPBatchId(id);
         return Optional.of(plantingBatchMapper.toDto(plantingBatchRepository.save(entity)));
     }
 
     public boolean deleteById(Long id) {
-        if (!plantingBatchRepository.existsById(id)) return false;
+        if (!plantingBatchRepository.existsById(id))
+            return false;
         plantingBatchRepository.deleteById(id);
         return true;
+    }
+
+    @Transactional
+    public void deleteMultipleByIds(List<Long> ids) {
+        plantingBatchRepository.deleteAllByIdInBatch(ids);
     }
 }

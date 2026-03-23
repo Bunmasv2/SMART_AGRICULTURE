@@ -1,22 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { ModuleRegistry, AllCommunityModule, type GridApi } from 'ag-grid-community';
 ModuleRegistry.registerModules([AllCommunityModule]);
-import {
-    PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid,
-} from 'recharts';
-import { PresentationChartBarIcon, TableCellsIcon, PlusIcon } from '@heroicons/react/24/outline';
-
-import BatchDetail from './BatchDetail';
-import { ChartPieIcon } from 'lucide-react';
-
-const MOCK_BATCHES = [
-    { p_batch_id: 1, batch_name: "Lô C1-2026", crop_name: "Chanh Không Hạt", variety: "Giống California", area_m2: 500, start_date: "2026-01-10", status: "ACTIVE" },
-    { p_batch_id: 2, batch_name: "Lô C2-2026", crop_name: "Chanh Bông Tím", variety: "Giống địa phương", area_m2: 350, start_date: "2025-12-15", status: "WARNING" },
-    { p_batch_id: 3, batch_name: "Lô T5-2025", crop_name: "Chanh Giấy", variety: "Giống F1", area_m2: 420, start_date: "2025-11-20", status: "HARVESTING" },
-    { p_batch_id: 4, batch_name: "Lô C3-2026", crop_name: "Chanh Không Hạt", variety: "Giống California", area_m2: 600, start_date: "2026-02-01", status: "COMPLETED" },
-];
+import { TableCellsIcon, PlusIcon } from '@heroicons/react/24/outline';
+import axios from 'axios';
+import type { Batch } from '../../models/Batch';
+import PieCharBatch from '../../components/charts/PieCharBatch';
+import ComposedChartBatch from '../../components/charts/ComposedChartBatch';
+import { TrashIcon } from 'lucide-react';
+import AddBatchModal from '../../modals/AddBatchModal';
+import { useNavigate } from 'react-router-dom';
 
 const COLORS: Record<string, string> = {
     ACTIVE: '#10b981',
@@ -26,23 +19,25 @@ const COLORS: Record<string, string> = {
 };
 
 export default function BatchList() {
-    const [selectedBatchId, setSelectedBatchId] = useState<number | null>(null);
-
-    const statusData = useMemo(() => {
-        const counts = MOCK_BATCHES.reduce((acc: Record<string, number>, b) => {
-            acc[b.status] = (acc[b.status] || 0) + 1;
-            return acc;
-        }, {});
-        return Object.keys(counts).map(k => ({ name: k, value: counts[k] }));
-    }, []);
-
+    const [gridApi, setGridApi] = useState<GridApi | null>(null);
+    const [selectedCount, setSelectedCount] = useState(0);
+    const [batches, setBatches] = useState<Batch[] | null>()
     const columnDefs = [
-        { field: 'p_batch_id', headerName: 'ID', width: 80 },
-        { field: 'batch_name', headerName: 'Tên Lô', flex: 1, filter: true },
-        { field: 'crop_name', headerName: 'Loại Cây', flex: 1 },
+        {
+            field: 'pBatchId',
+            headerName: 'ID',
+            width: 80,
+            filter: false,
+            checkboxSelection: true,
+            headerCheckboxSelection: true,
+            cellClass: 'font-mono text-slate-400'
+        },
+        { field: 'batchName', headerName: 'Tên Lô', flex: 1, filter: true },
+        { field: 'processName', headerName: 'Quy trình', flex: 1 },
+        { field: 'cropName', headerName: 'Loại Cây', flex: 1 },
         { field: 'variety', headerName: 'Giống', flex: 1 },
-        { field: 'area_m2', headerName: 'Diện tích (m²)', width: 130, sortable: true },
-        { field: 'start_date', headerName: 'Ngày bắt đầu', width: 150 },
+        { field: 'areaM2', headerName: 'Diện tích (m²)', width: 130, sortable: true },
+        { field: 'startDate', headerName: 'Ngày bắt đầu', width: 150 },
         {
             field: 'status', headerName: 'Trạng thái', width: 150,
             cellRenderer: (p: { value: string }) => (
@@ -53,79 +48,118 @@ export default function BatchList() {
             )
         },
     ];
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate()
 
-    if (selectedBatchId !== null) {
-        return <BatchDetail batchId={selectedBatchId} onBack={() => setSelectedBatchId(null)} />;
-    }
+    useEffect(() => {
+        const fetchBatches = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/planting-batches`)
+                setBatches(response.data.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchBatches()
+    }, [])
+    console.log(batches)
+
+    const handleDelete = async () => {
+        if (!gridApi || !batches) return;
+
+        const selectedNodes = gridApi.getSelectedNodes();
+        const selectedIds = selectedNodes.map(node => node.data.pBatchId);
+
+        if (selectedIds.length === 0) return;
+
+        if (window.confirm(`Anh có chắc chắn muốn xóa ${selectedIds.length} lô đã chọn không?`)) {
+            try {
+                await axios.delete('http://localhost:8080/api/planting-batches/bulk-delete', {
+                    data: selectedIds
+                });
+
+                const updatedBatches = batches.filter(
+                    batch => !selectedIds.includes(batch.pBatchId)
+                );
+                setBatches(updatedBatches);
+
+                gridApi.applyTransaction({ remove: selectedNodes.map(n => n.data) });
+
+                setSelectedCount(0);
+            } catch (error) {
+                console.error("Lỗi khi xóa:", error);
+                alert("Dạ, có lỗi xảy ra khi xóa trên server, anh kiểm tra lại kết nối nhé!");
+            }
+        }
+    };
 
     return (
         <div className="flex flex-col h-screen bg-white">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-white z-10">
-                <div>
-                    <h1 className="text-xl font-black text-slate-800 tracking-tight">QUẢN LÝ LÔ TRỒNG</h1>
-                    <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Hệ thống giám sát nông nghiệp</p>
-                </div>
-                <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-100 flex items-center gap-2 active:scale-95 text-sm">
-                    <PlusIcon className="h-4 w-4 stroke-[3px]" /> Tạo Lô Mới
-                </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
-                <div className="p-6 h-64 flex flex-col">
-                    <div className="flex items-center gap-2 mb-2">
-                        <ChartPieIcon className="h-4 w-4 text-emerald-600" />
-                        <h3 className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Trạng thái vận hành</h3>
-                    </div>
-                    <div className="flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={statusData} innerRadius={50} outerRadius={70} paddingAngle={8} dataKey="value">
-                                    {statusData.map((entry, i) => <Cell key={i} fill={COLORS[entry.name]} stroke="none" />)}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                                    }}
-                                    cursor={{ fill: '#f1f5f9' }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                <div className="p-6 h-64 flex flex-col">
-                    <div className="flex items-center gap-2 mb-2">
-                        <PresentationChartBarIcon className="h-4 w-4 text-blue-600" />
-                        <h3 className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Quy mô diện tích (m²)</h3>
-                    </div>
-                    <div className="flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={MOCK_BATCHES}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="batch_name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Bar dataKey="area_m2" fill="#059669" radius={[4, 4, 0, 0]} barSize={30} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-[35%_65%] gap-4 border-b border-slate-100 bg-slate-50/50 p-4">
+                {batches && (
+                    <>
+                        <PieCharBatch batches={batches} />
+                        <ComposedChartBatch batches={batches} />
+                    </>
+                )}
             </div>
 
             <div className="flex-1 flex flex-col min-h-0 bg-white">
-                <div className="px-6 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
-                    <div className="flex items-center gap-2">
-                        <TableCellsIcon className="h-4 w-4 text-slate-400" />
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">Dữ liệu chi tiết lô canh tác</span>
+                <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <TableCellsIcon className="h-4 w-4 text-slate-400" />
+                            <span className="text-[11px] text-sm font-bold text-slate-500 uppercase tracking-tighter">
+                                Dữ liệu chi tiết lô canh tác
+                            </span>
+
+                            <span className="text-[10px] text-xs text-slate-400 italic">
+                                (Double click để xem chi tiết)
+                            </span>
+                        </div>
+
+                        {selectedCount > 0 && (
+                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
+                                Đang chọn {selectedCount} dòng
+                            </span>
+                        )}
                     </div>
-                    <span className="text-[10px] text-slate-400 italic">Nhấp đúp chuột để mở chi tiết</span>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleDelete}
+                            disabled={selectedCount === 0}
+                            className={`px-5 py-2.5 rounded-xl font-bold transition-all shadow-md flex items-center gap-2 text-sm
+                                ${selectedCount > 0
+                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-100 active:scale-95'
+                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}
+                            `}
+                        >
+                            <TrashIcon className="h-4 w-4 stroke-[2.5px]" />
+                            <span className="text-[11px] font-bold uppercase tracking-tighter">Xóa lô</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsModalOpen(true)} // Mở modal khi click
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-100 flex items-center gap-2 active:scale-95 text-sm"
+                        >
+                            <PlusIcon className="h-4 w-4 stroke-[3px]" />
+                            <span className="text-[11px] font-bold uppercase tracking-tighter">Tạo lô mới</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="ag-theme-alpine w-full h-full flex-1 border-none overflow-hidden">
                     <AgGridReact
-                        rowData={MOCK_BATCHES}
+                        rowData={batches}
+                        rowSelection="multiple"
+                        onGridReady={(params) => setGridApi(params.api)}
+                        onSelectionChanged={(event) => {
+                            setSelectedCount(event.api.getSelectedRows().length);
+                        }}
+                        suppressRowClickSelection={false}
+
                         columnDefs={columnDefs as never}
                         defaultColDef={{
                             sortable: true,
@@ -138,10 +172,19 @@ export default function BatchList() {
                         animateRows={true}
                         pagination={true}
                         paginationPageSize={20}
-                        onRowClicked={(e) => setSelectedBatchId(e.data ? e.data.p_batch_id : 1)}
+                        onRowDoubleClicked={(e) => navigate(`/batches/${e.data?.pBatchId}`)}
                     />
                 </div>
             </div>
+
+            <AddBatchModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={() => {
+                    // Gọi lại hàm fetch danh sách lô để cập nhật bảng sau khi thêm thành công
+                    // fetchBatches();
+                }}
+            />
 
             <style>{`
                 .ag-theme-alpine {

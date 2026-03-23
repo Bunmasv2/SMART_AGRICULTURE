@@ -1,6 +1,7 @@
 package com.smartfarm.api.controller;
 
 import com.smartfarm.api.dto.ApiResponse;
+import com.smartfarm.api.dto.GrowthProcessDetailDto;
 import com.smartfarm.api.dto.GrowthProcessDto;
 import com.smartfarm.api.service.GrowthProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,8 @@ public class GrowthProcessController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(@PathVariable Long id, @RequestBody GrowthProcessDto dto) {
+    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(@PathVariable Long id,
+            @RequestBody GrowthProcessDto dto) {
         try {
             return growthProcessService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "GrowthProcess updated successfully")))
@@ -80,5 +82,13 @@ public class GrowthProcessController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));
         }
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<ApiResponse<GrowthProcessDetailDto>> getDetailById(@PathVariable Long id) {
+        return growthProcessService.findDetailById(id)
+                .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.notFound("GrowthProcess detail not found with id: " + id)));
     }
 }

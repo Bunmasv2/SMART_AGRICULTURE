@@ -56,7 +56,8 @@ public class PlantingBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(@PathVariable Long id, @RequestBody PlantingBatchDto dto) {
+    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(@PathVariable Long id,
+            @RequestBody PlantingBatchDto dto) {
         try {
             return plantingBatchService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "PlantingBatch updated successfully")))
@@ -79,6 +80,24 @@ public class PlantingBatchController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/bulk-delete")
+    public ResponseEntity<ApiResponse<Void>> deleteMultiple(@RequestBody List<Long> ids) {
+        try {
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error(400, "Danh sách ID không được để trống ạ!"));
+            }
+
+            plantingBatchService.deleteMultipleByIds(ids);
+
+            return ResponseEntity.ok(ApiResponse.success(null,
+                    String.format("Đã xóa thành công %d lô canh tác", ids.size())));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, "Lỗi khi xóa hàng loạt: " + e.getMessage()));
         }
     }
 }
