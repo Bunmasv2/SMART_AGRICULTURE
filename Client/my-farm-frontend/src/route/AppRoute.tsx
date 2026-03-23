@@ -38,6 +38,7 @@ const AppRoutes = () => {
                         <Route path="/calendar" element={<Calendar />} />
 
                         <Route path="/ai-assistant" element={<AIAssistant />} />
+                        <Route path="/ai-assistant/:batchId" element={<AIAssistant />} />
 
                         <Route path="/settings" element={<Settings />} />
                     </Route>
