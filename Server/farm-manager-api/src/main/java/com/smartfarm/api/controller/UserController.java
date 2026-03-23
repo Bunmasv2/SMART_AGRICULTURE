@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserDto>> getById(@PathVariable Integer id) {
         return userService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -52,7 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> update(@PathVariable Long id, @RequestBody UserDto dto) {
+    public ResponseEntity<ApiResponse<UserDto>> update(@PathVariable Integer id, @RequestBody UserDto dto) {
         try {
             return userService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "User updated successfully")))
@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (userService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully"));

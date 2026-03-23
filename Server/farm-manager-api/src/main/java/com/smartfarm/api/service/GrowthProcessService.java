@@ -29,11 +29,11 @@ public class GrowthProcessService {
         return growthProcessRepository.findAll().stream().map(growthProcessMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<GrowthProcessDto> findByCropId(Long cropId) {
+    public List<GrowthProcessDto> findByCropId(Integer cropId) {
         return growthProcessRepository.findByCropCropId(cropId).stream().map(growthProcessMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<GrowthProcessDto> findById(Long id) {
+    public Optional<GrowthProcessDto> findById(Integer id) {
         return growthProcessRepository.findById(id).map(growthProcessMapper::toDto);
     }
 
@@ -42,14 +42,14 @@ public class GrowthProcessService {
         return growthProcessMapper.toDto(growthProcessRepository.save(entity));
     }
 
-    public Optional<GrowthProcessDto> update(Long id, GrowthProcessDto dto) {
+    public Optional<GrowthProcessDto> update(Integer id, GrowthProcessDto dto) {
         if (!growthProcessRepository.existsById(id)) return Optional.empty();
         GrowthProcess entity = growthProcessMapper.toEntity(dto);
         entity.setProcessId(id);
         return Optional.of(growthProcessMapper.toDto(growthProcessRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!growthProcessRepository.existsById(id)) return false;
         growthProcessRepository.deleteById(id);
         return true;

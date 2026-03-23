@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StageDto {
-    private Long stageId;
-    private Long processId;
+    private Integer stageId;
+    private Integer processId;
     private String processName;
     private String stageName;
     private Integer startDay;

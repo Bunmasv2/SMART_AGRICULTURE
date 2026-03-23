@@ -15,7 +15,7 @@ public class InventoryItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
-    private Long itemId;
+    private Integer itemId;
 
     @Column(name = "item_name", nullable = false, length = 100)
     private String itemName;
@@ -28,4 +28,8 @@ public class InventoryItem {
 
     @Column(name = "min_threshold")
     private Double minThreshold;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "crop_id")
+    private Crop crop;
 }

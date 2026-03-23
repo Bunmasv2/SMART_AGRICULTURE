@@ -37,7 +37,7 @@ public class PlantingBatchController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PlantingBatchDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PlantingBatchDto>> getById(@PathVariable Integer id) {
         return plantingBatchService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,7 @@ public class PlantingBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(@PathVariable Long id, @RequestBody PlantingBatchDto dto) {
+    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(@PathVariable Integer id, @RequestBody PlantingBatchDto dto) {
         try {
             return plantingBatchService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "PlantingBatch updated successfully")))
@@ -69,7 +69,7 @@ public class PlantingBatchController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (plantingBatchService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "PlantingBatch deleted successfully"));

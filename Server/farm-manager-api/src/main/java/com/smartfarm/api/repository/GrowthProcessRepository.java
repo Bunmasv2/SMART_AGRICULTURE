@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface GrowthProcessRepository extends JpaRepository<GrowthProcess, Long> {
-    List<GrowthProcess> findByCropCropId(Long cropId);
+public interface GrowthProcessRepository extends JpaRepository<GrowthProcess, Integer> {
+    List<GrowthProcess> findByCropCropId(Integer cropId);
 }

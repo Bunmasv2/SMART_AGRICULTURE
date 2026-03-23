@@ -33,7 +33,7 @@ public class InventoryItemService {
         return inventoryItemRepository.findByCategory(category).stream().map(inventoryItemMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<InventoryItemDto> findById(Long id) {
+    public Optional<InventoryItemDto> findById(Integer id) {
         return inventoryItemRepository.findById(id).map(inventoryItemMapper::toDto);
     }
 
@@ -42,14 +42,14 @@ public class InventoryItemService {
         return inventoryItemMapper.toDto(inventoryItemRepository.save(entity));
     }
 
-    public Optional<InventoryItemDto> update(Long id, InventoryItemDto dto) {
+    public Optional<InventoryItemDto> update(Integer id, InventoryItemDto dto) {
         if (!inventoryItemRepository.existsById(id)) return Optional.empty();
         InventoryItem entity = inventoryItemMapper.toEntity(dto);
         entity.setItemId(id);
         return Optional.of(inventoryItemMapper.toDto(inventoryItemRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!inventoryItemRepository.existsById(id)) return false;
         inventoryItemRepository.deleteById(id);
         return true;

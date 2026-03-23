@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AiAnalysisDto {
-    private Long analysisId;
-    private Long pBatchId;
+    private Long analysisId;       // bigint -> giữ Long
+    private Integer pBatchId;
     private String batchName;
     private String imagePath;
     private String resultJson;

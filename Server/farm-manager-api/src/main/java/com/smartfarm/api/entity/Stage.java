@@ -15,7 +15,7 @@ public class Stage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stage_id")
-    private Long stageId;
+    private Integer stageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_id")

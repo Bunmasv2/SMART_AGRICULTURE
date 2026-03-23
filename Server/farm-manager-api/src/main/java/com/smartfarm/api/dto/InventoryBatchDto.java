@@ -9,11 +9,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryBatchDto {
-    private Long batchInvId;
-    private Long itemId;
+    private Integer batchInvId;
+    private Integer itemId;
     private String itemName;
     private String supplier;
     private Double quantity;
     private LocalDate expiryDate;
     private LocalDateTime receivedDate;
+    private LocalDate productionDate;
+    private Double germinationRate;
 }

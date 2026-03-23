@@ -7,11 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskTemplateDto {
-    private Long taskTmpId;
-    private Long stageId;
+    private Integer taskTmpId;
+    private Integer stageId;
     private String stageName;
     private String taskName;
-    private Long itemId;
+    private Integer itemId;
     private String itemName;
     private Double quantityRequired;
     private Integer offsetDay;

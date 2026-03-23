@@ -7,5 +7,5 @@ import java.util.List;
 
 @Repository
 public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
-    List<AiAnalysis> findByPlantingBatchPBatchId(Long pBatchId);
+    List<AiAnalysis> findByPlantingBatchPBatchId(Integer pBatchId);
 }

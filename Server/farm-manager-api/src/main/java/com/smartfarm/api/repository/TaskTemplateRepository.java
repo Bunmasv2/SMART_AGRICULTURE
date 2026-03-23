@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TaskTemplateRepository extends JpaRepository<TaskTemplate, Long> {
-    List<TaskTemplate> findByStageStageId(Long stageId);
+public interface TaskTemplateRepository extends JpaRepository<TaskTemplate, Integer> {
+    List<TaskTemplate> findByStageStageId(Integer stageId);
 }

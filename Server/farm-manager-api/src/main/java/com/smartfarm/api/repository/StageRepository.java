@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StageRepository extends JpaRepository<Stage, Long> {
-    List<Stage> findByProcessProcessId(Long processId);
+public interface StageRepository extends JpaRepository<Stage, Integer> {
+    List<Stage> findByProcessProcessId(Integer processId);
 }

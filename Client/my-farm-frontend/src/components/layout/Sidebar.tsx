@@ -27,7 +27,6 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         { name: 'Trợ lý AI', path: '/ai-assistant', icon: SparklesIcon },
         { name: 'Hệ thống', path: '/settings', icon: Cog6ToothIcon },
     ];
-
     return (
         <aside className={`flex flex-col h-full bg-white border-r border-gray-100 ${className}`}>
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">

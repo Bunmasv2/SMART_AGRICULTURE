@@ -132,9 +132,16 @@ export default function SmartFarmDashboard() {
     );
 }
 
+interface QuickStatProps {
+    value: string;
+    label: string;
+    icon: React.ReactElement<{ className?: string }>;
+    color: 'green' | 'blue' | 'yellow' | 'red';
+}
+
 // Sub-components với thiết kế tối giản
-function QuickStat({ value, label, icon, color }: any) {
-    const colors: any = {
+function QuickStat({ value, label, icon, color }: QuickStatProps) {
+    const colors = {
         green: "bg-green-50 text-green-600 border-green-100",
         blue: "bg-blue-50 text-blue-600 border-blue-100",
         yellow: "bg-orange-50 text-orange-600 border-orange-100",
@@ -153,7 +160,14 @@ function QuickStat({ value, label, icon, color }: any) {
     );
 }
 
-function PlotItem({ name, stage, progress, health }: any) {
+interface PlotItemProps {
+    name: string;
+    stage: string;
+    progress: number;
+    health: 'high' | 'low' | string;
+}
+
+function PlotItem({ name, stage, progress, health }: PlotItemProps) {
     return (
         <div className="group cursor-pointer">
             <div className="flex justify-between items-end mb-2 px-1">

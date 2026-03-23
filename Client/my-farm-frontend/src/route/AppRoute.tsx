@@ -12,6 +12,9 @@ const Tasks = lazy(() => import('../pages/tasks/TaskManagement'));
 const Calendar = lazy(() => import('../pages/tasks/FarmingCalendar'));
 const AIAssistant = lazy(() => import('../pages/ai-assistant/ImageAnalysis'));
 const Settings = lazy(() => import('../pages/settings/Settings'));
+const Login = lazy(() => import('../pages/auth/Login'));
+const Register = lazy(() => import('../pages/auth/Register'));
+const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
 
 const AppRoutes = () => {
     return (
@@ -38,6 +41,10 @@ const AppRoutes = () => {
 
                         <Route path="/settings" element={<Settings />} />
                     </Route>
+
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -29,7 +29,7 @@ public class AiAnalysisService {
         return aiAnalysisRepository.findAll().stream().map(aiAnalysisMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<AiAnalysisDto> findByBatchId(Long pBatchId) {
+    public List<AiAnalysisDto> findByBatchId(Integer pBatchId) {
         return aiAnalysisRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(aiAnalysisMapper::toDto).collect(Collectors.toList());
     }
 

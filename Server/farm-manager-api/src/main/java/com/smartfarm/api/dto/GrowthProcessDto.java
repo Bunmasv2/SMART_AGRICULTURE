@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GrowthProcessDto {
-    private Long processId;
-    private Long cropId;
+    private Integer processId;
+    private Integer cropId;
     private String cropName;
     private String processName;
     private Integer totalDays;

@@ -15,7 +15,7 @@ public class GrowthProcess {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "process_id")
-    private Long processId;
+    private Integer processId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")

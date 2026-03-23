@@ -29,11 +29,11 @@ public class TaskService {
         return taskRepository.findAll().stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<TaskDto> findByBatchId(Long pBatchId) {
+    public List<TaskDto> findByBatchId(Integer pBatchId) {
         return taskRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<TaskDto> findByAssignedUser(Long userId) {
+    public List<TaskDto> findByAssignedUser(Integer userId) {
         return taskRepository.findByAssignedToUserId(userId).stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
@@ -41,7 +41,7 @@ public class TaskService {
         return taskRepository.findByStatus(status).stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<TaskDto> findById(Long id) {
+    public Optional<TaskDto> findById(Integer id) {
         return taskRepository.findById(id).map(taskMapper::toDto);
     }
 
@@ -50,14 +50,14 @@ public class TaskService {
         return taskMapper.toDto(taskRepository.save(entity));
     }
 
-    public Optional<TaskDto> update(Long id, TaskDto dto) {
+    public Optional<TaskDto> update(Integer id, TaskDto dto) {
         if (!taskRepository.existsById(id)) return Optional.empty();
         Task entity = taskMapper.toEntity(dto);
         entity.setTaskId(id);
         return Optional.of(taskMapper.toDto(taskRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!taskRepository.existsById(id)) return false;
         taskRepository.deleteById(id);
         return true;

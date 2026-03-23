@@ -26,14 +26,20 @@ public class SecurityConfig {
                 // ✅ Enable CORS với config custom
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // ✅ Cho phép toàn bộ request (dev mode)
+                // ✅ Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll())
+                        .requestMatchers("/api/auth/**").permitAll() // Cho phép truy cập auth
+                        .anyRequest().permitAll()) // Tạm thời permitAll để dev, sau này đổi thành .authenticated()
 
                 // ✅ Stateless (không dùng session)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.security.crypto.password.PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 
     @Bean

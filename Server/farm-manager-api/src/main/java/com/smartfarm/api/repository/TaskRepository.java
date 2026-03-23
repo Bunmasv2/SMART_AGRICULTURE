@@ -6,8 +6,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByPlantingBatchPBatchId(Long pBatchId);
-    List<Task> findByAssignedToUserId(Long userId);
+public interface TaskRepository extends JpaRepository<Task, Integer> {
+    List<Task> findByPlantingBatchPBatchId(Integer pBatchId);
+    List<Task> findByAssignedToUserId(Integer userId);
     List<Task> findByStatus(String status);
 }

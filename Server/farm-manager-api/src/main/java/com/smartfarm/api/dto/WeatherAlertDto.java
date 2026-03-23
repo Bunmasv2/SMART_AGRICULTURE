@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WeatherAlertDto {
-    private Long alertId;
-    private Long pBatchId;
+    private Integer alertId;
+    private Integer pBatchId;
     private String batchName;
     private String alertType;
     private String description;
