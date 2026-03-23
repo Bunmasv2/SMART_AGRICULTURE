@@ -1,14 +1,25 @@
 package com.smartfarm.api.controller;
 
-import com.smartfarm.api.dto.ApiResponse;
-import com.smartfarm.api.dto.TaskDto;
-import com.smartfarm.api.service.TaskService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.smartfarm.api.dto.ApiResponse;
+import com.smartfarm.api.dto.TaskDto;
+import com.smartfarm.api.dto.TaskProgressDTO;
+import com.smartfarm.api.service.TaskService;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -85,6 +96,42 @@ public class TaskController {
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.notFound("Task not found with id: " + id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
+
+    /**
+     * Đánh dấu task hoàn thành
+     * PUT /api/tasks/{id}/complete
+     */
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<ApiResponse<TaskDto>> markAsCompleted(@PathVariable Integer id) {
+        try {
+            TaskDto completedTask = taskService.markTaskAsCompleted(id);
+            return ResponseEntity.ok(ApiResponse.success(completedTask, "Task marked as completed"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
+
+    /**
+     * Lấy tiến độ hoàn thành của một batch
+     * GET /api/tasks/batch/{pBatchId}/progress
+     */
+    @GetMapping("/batch/{pBatchId}/progress")
+    public ResponseEntity<ApiResponse<TaskProgressDTO>> getBatchProgress(@PathVariable Integer pBatchId) {
+        try {
+            TaskProgressDTO progress = taskService.getBatchProgress(pBatchId);
+            return ResponseEntity.ok(ApiResponse.success(progress));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));

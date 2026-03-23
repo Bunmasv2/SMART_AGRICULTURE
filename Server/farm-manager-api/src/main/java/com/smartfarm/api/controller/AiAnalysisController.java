@@ -2,11 +2,13 @@ package com.smartfarm.api.controller;
 
 import com.smartfarm.api.dto.ApiResponse;
 import com.smartfarm.api.dto.AiAnalysisDto;
+import com.smartfarm.api.dto.AiAnalysisResponseDTO;
 import com.smartfarm.api.service.AiAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,6 +81,34 @@ public class AiAnalysisController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
+
+    /**
+     * Phân tích ảnh lá cây chanh bằng AI
+     * POST /api/ai-analyses/analyze
+     */
+    @PostMapping("/analyze")
+    public ResponseEntity<ApiResponse<AiAnalysisResponseDTO>> analyzeLeafImage(
+            @RequestParam("pBatchId") Integer pBatchId,
+            @RequestParam("imageFile") MultipartFile imageFile) {
+        try {
+            // Validate file
+            if (imageFile.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error(400, "Image file is required"));
+            }
+
+            // Gọi service phân tích
+            AiAnalysisResponseDTO result = aiAnalysisService.analyzeLeafImage(pBatchId, imageFile);
+
+            return ResponseEntity.ok(ApiResponse.success(result, "Image analyzed successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(404, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, "Error analyzing image: " + e.getMessage()));
         }
     }
 }
