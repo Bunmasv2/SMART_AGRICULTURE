@@ -41,8 +41,6 @@ def preprocess_image(file_data):
     # Chuyển thành numpy array
     img_array = np.array(image, dtype=np.float32)
 
-    # Normalize cho MobileNetV2 (scale 0-255 về 0-1)
-    img_array = img_array / 255.0
 
     # Thêm batch dimension: (224, 224, 3) -> (1, 224, 224, 3)
     img_array = np.expand_dims(img_array, axis=0)
@@ -77,6 +75,12 @@ async def predict_leaf(file: UploadFile = File(...)):
         predicted_index = np.argmax(predictions[0])
         disease_class = CLASS_NAMES[predicted_index]
         confidence = float(predictions[0][predicted_index])
+        
+        if confidence < 0.50:
+            return {
+                "status": "error",
+                "message": "Đây có thể không phải là lá chanh hoặc ảnh quá mờ, vui lòng thử lại."
+            }
 
         # Trả về JSON
         return {

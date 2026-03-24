@@ -40,10 +40,25 @@ export const aiAnalysisService = {
    */
   async analyzeImage(file: File, batchId: string): Promise<AiAnalysisResponse> {
     try {
+      console.log('📡 aiAnalysisService.analyzeImage called');
+      console.log('📁 File:', file.name, file.size, file.type);
+      console.log('🏷️ BatchId:', batchId);
+
+      // Validate file type client-side
+      if (!file.type.startsWith('image/')) {
+        throw new Error('File phải là ảnh (JPG, PNG, etc.)');
+      }
+
       // Đóng gói file vào FormData
       const formData = new FormData();
       formData.append('imageFile', file);
       formData.append('pBatchId', batchId);
+
+      console.log('📦 FormData created:', {
+        imageFile: file.name,
+        pBatchId: batchId
+      });
+      console.log('🌐 Sending POST to:', `${API_BASE_URL}/ai-analyses/analyze`);
 
       // Gửi request POST với header multipart/form-data
       const response = await apiClient.post<ApiResponse<AiAnalysisResponse>>(
@@ -56,18 +71,49 @@ export const aiAnalysisService = {
         }
       );
 
+      console.log('✅ API Response received:', response.status);
+      console.log('📊 Response data:', response.data);
+
       // Kiểm tra response hợp lệ
       if (!isValidApiResponse<AiAnalysisResponse>(response.data) || !response.data.data) {
+        console.error('❌ Invalid API response structure:', response.data);
         throw new Error('Invalid API response: missing data');
       }
 
       // Trả về data từ ApiResponse wrapper
       return response.data.data;
     } catch (error) {
+      console.error('❌ Error in analyzeImage:', error);
       const axiosError = error as AxiosError;
+
+      if (axiosError.response) {
+        const status = axiosError.response.status;
+        const data = axiosError.response.data as ApiResponse<unknown>;
+
+        console.error('📍 Server responded with error:', {
+          status,
+          message: data?.message || 'Unknown error'
+        });
+
+        // Handle specific error codes with user-friendly messages
+        switch (status) {
+          case 400:
+            throw new Error(data?.message || 'File không hợp lệ. Vui lòng chọn ảnh JPG hoặc PNG.');
+          case 404:
+            throw new Error(data?.message || 'Không tìm thấy lô trồng. Vui lòng kiểm tra lại.');
+          case 503:
+            throw new Error(data?.message || 'Dịch vụ AI tạm thời không khả dụng. Vui lòng thử lại sau.');
+          case 500:
+            throw new Error(data?.message || 'Lỗi server. Vui lòng thử lại sau.');
+          default:
+            throw new Error(`Lỗi ${status}: ${data?.message || 'Unknown error'}`);
+        }
+      }
+
       if (axiosError.code === 'ERR_NETWORK' || axiosError.code === 'ECONNREFUSED') {
         throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra backend đang chạy.');
       }
+
       throw error;
     }
   },

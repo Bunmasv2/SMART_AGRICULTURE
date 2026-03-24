@@ -10,7 +10,11 @@ import java.util.Optional;
 
 @Repository
 public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
-    List<AiAnalysis> findByPlantingBatchPBatchId(Integer pBatchId);
+    /**
+     * Tìm tất cả AiAnalysis theo pBatchId, sắp xếp theo ngày tạo giảm dần (mới nhất trước)
+     */
+    @Query("SELECT a FROM AiAnalysis a WHERE a.plantingBatch.pBatchId = :pBatchId ORDER BY a.createdAt DESC")
+    List<AiAnalysis> findByPlantingBatchPBatchId(@Param("pBatchId") Integer pBatchId);
 
     /**
      * Tìm bản ghi AiAnalysis mới nhất của một batch

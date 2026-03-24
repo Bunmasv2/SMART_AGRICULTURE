@@ -84,16 +84,20 @@ export default function ImageAnalysis() {
     // Validate batchId
     const currentBatchId = batchId || '1'; // Default batch nếu không có
 
-    console.log('Analyzing image:', file.name, 'for batch:', currentBatchId);
+    console.log('🚀 ImageAnalysis: Starting analysis...');
+    console.log('📁 File:', file.name, file.size, 'bytes', file.type);
+    console.log('🏷️ BatchId:', currentBatchId);
 
     // Bắt đầu scanning
     setIsScanning(true);
     setError(null);
 
     try {
+      console.log('📡 Calling API...');
       // Gọi API phân tích ảnh
       const result = await aiAnalysisService.analyzeImage(file, currentBatchId);
 
+      console.log('✅ Analysis successful:', result);
       // Cập nhật kết quả phân tích
       setAiResult(result);
 
@@ -105,11 +109,9 @@ export default function ImageAnalysis() {
         console.warn('Failed to refresh history after analysis:', historyError);
       }
 
-      console.log('Analysis successful:', result);
-
     } catch (err) {
       // Xử lý lỗi
-      console.error('Error analyzing image:', err);
+      console.error('❌ Error analyzing image:', err);
       const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi phân tích ảnh';
       setError(errorMessage);
 
