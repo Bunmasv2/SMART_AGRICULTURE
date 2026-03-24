@@ -20,21 +20,25 @@ public class InventoryBatchService {
     private final InventoryBatchMapper inventoryBatchMapper;
 
     @Autowired
-    public InventoryBatchService(InventoryBatchRepository inventoryBatchRepository, InventoryBatchMapper inventoryBatchMapper) {
+    public InventoryBatchService(InventoryBatchRepository inventoryBatchRepository,
+            InventoryBatchMapper inventoryBatchMapper) {
         this.inventoryBatchRepository = inventoryBatchRepository;
         this.inventoryBatchMapper = inventoryBatchMapper;
     }
 
     public List<InventoryBatchDto> findAll() {
-        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public List<InventoryBatchDto> findByItemId(Integer itemId) {
-        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public List<InventoryBatchDto> findByCategory(String category) {
-        return inventoryBatchRepository.findByItemCategory(category).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findByItemCategory(category).stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<InventoryBatchDto> findById(Integer id) {
@@ -47,14 +51,16 @@ public class InventoryBatchService {
     }
 
     public Optional<InventoryBatchDto> update(Integer id, InventoryBatchDto dto) {
-        if (!inventoryBatchRepository.existsById(id)) return Optional.empty();
+        if (!inventoryBatchRepository.existsById(id))
+            return Optional.empty();
         InventoryBatch entity = inventoryBatchMapper.toEntity(dto);
         entity.setBatchInvId(id);
         return Optional.of(inventoryBatchMapper.toDto(inventoryBatchRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!inventoryBatchRepository.existsById(id)) return false;
+        if (!inventoryBatchRepository.existsById(id))
+            return false;
         inventoryBatchRepository.deleteById(id);
         return true;
     }
