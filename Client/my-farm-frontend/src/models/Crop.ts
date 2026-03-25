@@ -3,4 +3,10 @@ export interface CropBase {
     cropName: string
     variety: string
     description: string
+    rainProbabilityThreshold?: number
+    highTempThreshold?: number
+    lowTempThreshold?: number
+    strongWindThreshold?: number
+    highHumidityThreshold?: number
+    stormWeatherCode?: number
 }

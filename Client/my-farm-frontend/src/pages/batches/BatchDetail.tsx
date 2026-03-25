@@ -98,7 +98,7 @@ export default function BatchDetail() {
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                const reponse = await axios.get(`http://localhost:8080/api/weather-alerts/dashboard/${1}`)
+                const reponse = await axios.get(`http://localhost:8080/api/weather-alerts/dashboard/${id}`)
                 console.log(reponse.data)
                 setWeather(reponse.data.data)
             } catch (error) {

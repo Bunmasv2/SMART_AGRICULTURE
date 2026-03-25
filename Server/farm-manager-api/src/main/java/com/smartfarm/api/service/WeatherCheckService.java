@@ -36,13 +36,14 @@ public class WeatherCheckService {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherCheckService.class);
 
-    // ===== Ngưỡng cảnh báo =====
-    private static final int RAIN_PROBABILITY_THRESHOLD = 70; // %
-    private static final double HIGH_TEMP_THRESHOLD = 30.0; // °C
-    private static final double LOW_TEMP_THRESHOLD = 15.0; // °C
-    private static final double STRONG_WIND_THRESHOLD = 40.0; // km/h
-    private static final int HIGH_HUMIDITY_THRESHOLD = 90; // %
-    private static final int STORM_WEATHER_CODE = 95; // WMO code
+    // ===== Ngưỡng cảnh báo mặc định =====
+    private static final int DEFAULT_RAIN_PROBABILITY_THRESHOLD = 70; // %
+    private static final double DEFAULT_HIGH_TEMP_THRESHOLD = 30.0; // °C
+    private static final double DEFAULT_LOW_TEMP_THRESHOLD = 15.0; // °C
+    private static final double DEFAULT_STRONG_WIND_THRESHOLD = 40.0; // km/h
+    private static final int DEFAULT_HIGH_HUMIDITY_THRESHOLD = 90; // %
+    private static final int DEFAULT_STORM_WEATHER_CODE = 95; // WMO code
+
 
     private final PlantingBatchRepository plantingBatchRepository;
     private final WeatherAlertRepository weatherAlertRepository;
@@ -106,19 +107,27 @@ public class WeatherCheckService {
                 w.getTemperature(), w.getPrecipitationProbability(),
                 w.getWindSpeed(), w.getRelativeHumidity(), w.getWeatherCode());
 
-        // ── 1. Cảnh báo giông bão (weathercode >= 95) ──────────────────────
-        if (w.getWeatherCode() != null && w.getWeatherCode() >= STORM_WEATHER_CODE) {
+        Double highTempThreshold = batch.getCrop() != null && batch.getCrop().getHighTempThreshold() != null ? batch.getCrop().getHighTempThreshold() : DEFAULT_HIGH_TEMP_THRESHOLD;
+        Double lowTempThreshold = batch.getCrop() != null && batch.getCrop().getLowTempThreshold() != null ? batch.getCrop().getLowTempThreshold() : DEFAULT_LOW_TEMP_THRESHOLD;
+        Integer rainProbThreshold = batch.getCrop() != null && batch.getCrop().getRainProbabilityThreshold() != null ? batch.getCrop().getRainProbabilityThreshold() : DEFAULT_RAIN_PROBABILITY_THRESHOLD;
+        Double windThreshold = batch.getCrop() != null && batch.getCrop().getStrongWindThreshold() != null ? batch.getCrop().getStrongWindThreshold() : DEFAULT_STRONG_WIND_THRESHOLD;
+        Integer humidityThreshold = batch.getCrop() != null && batch.getCrop().getHighHumidityThreshold() != null ? batch.getCrop().getHighHumidityThreshold() : DEFAULT_HIGH_HUMIDITY_THRESHOLD;
+        Integer stormCodeThreshold = batch.getCrop() != null && batch.getCrop().getStormWeatherCode() != null ? batch.getCrop().getStormWeatherCode() : DEFAULT_STORM_WEATHER_CODE;
+
+        // ── 1. Cảnh báo thời tiết xấu theo ngưỡng đã cài đặt ──────────────────────
+        if (w.getWeatherCode() != null && w.getWeatherCode() >= stormCodeThreshold) {
+            String weatherName = weatherCodeToText(w.getWeatherCode());
             String desc = String.format(
-                    "⛈️ CẢNH BÁO GIÔNG BÃO - Mã thời tiết: %d. " +
-                            "Hãy đảm bảo an toàn cho cây trồng và thiết bị nông nghiệp, " +
-                            "thu hoạch sản phẩm đến kỳ ngay lập tức.",
-                    w.getWeatherCode());
+                    "⚠️ CẢNH BÁO THỜI TIẾT - Hiện tại: %s. " +
+                            "Thời tiết đã đạt hoặc vượt ngưỡng nguy hiểm bạn cấu hình. " +
+                            "Hãy chủ động đưa ra biện pháp xử lý để đảm bảo an toàn cho cây trồng.",
+                    weatherName);
             generatedAlerts.add(buildAlert(batch, "STORM", desc));
         }
 
         // ── 2. Cảnh báo nguy cơ mưa to ────────────────────────────────────
         if (w.getPrecipitationProbability() != null
-                && w.getPrecipitationProbability() >= RAIN_PROBABILITY_THRESHOLD) {
+                && w.getPrecipitationProbability() >= rainProbThreshold) {
             String desc = String.format(
                     "🌧️ NGUY CƠ MƯA LỚN - Xác suất mưa hiện tại: %d%%. " +
                             "Vui lòng che phủ vật tư phân bón, hạt giống và thu hoạch sớm nếu cần thiết. " +
@@ -128,42 +137,42 @@ public class WeatherCheckService {
         }
 
         // ── 3. Cảnh báo nhiệt độ cao ───────────────────────────────────────
-        if (w.getTemperature() != null && w.getTemperature() >= HIGH_TEMP_THRESHOLD) {
+        if (w.getTemperature() != null && w.getTemperature() >= highTempThreshold) {
             String desc = String.format(
                     "🌡️ NHIỆT ĐỘ CAO - Nhiệt độ hiện tại: %.1f°C (ngưỡng cảnh báo: %.0f°C). " +
                             "Hãy tưới nước cho cây ngay lập tức, tốt nhất vào buổi sáng sớm hoặc chiều tối. " +
                             "Sử dụng lưới che nắng để giảm tác động nhiệt.",
-                    w.getTemperature(), HIGH_TEMP_THRESHOLD);
+                    w.getTemperature(), highTempThreshold);
             generatedAlerts.add(buildAlert(batch, "HIGH_TEMP", desc));
         }
 
         // ── 4. Cảnh báo nhiệt độ thấp ─────────────────────────────────────
-        if (w.getTemperature() != null && w.getTemperature() <= LOW_TEMP_THRESHOLD) {
+        if (w.getTemperature() != null && w.getTemperature() <= lowTempThreshold) {
             String desc = String.format(
                     "❄️ NHIỆT ĐỘ THẤP - Nhiệt độ hiện tại: %.1f°C (ngưỡng cảnh báo: %.0f°C). " +
                             "Che phủ cây trồng bằng nilon hoặc vải không dệt để tránh sương giá. " +
                             "Hạn chế tưới nước trong điều kiện nhiệt độ thấp.",
-                    w.getTemperature(), LOW_TEMP_THRESHOLD);
+                    w.getTemperature(), lowTempThreshold);
             generatedAlerts.add(buildAlert(batch, "LOW_TEMP", desc));
         }
 
         // ── 5. Cảnh báo gió mạnh ──────────────────────────────────────────
-        if (w.getWindSpeed() != null && w.getWindSpeed() >= STRONG_WIND_THRESHOLD) {
+        if (w.getWindSpeed() != null && w.getWindSpeed() >= windThreshold) {
             String desc = String.format(
                     "💨 GIÓ MẠNH - Tốc độ gió hiện tại: %.1f km/h (ngưỡng cảnh báo: %.0f km/h). " +
                             "Kiểm tra và cố định giàn, cọc chống cho cây. " +
                             "Tạm hoãn phun thuốc và bón phân để tránh bay hơi không cần thiết.",
-                    w.getWindSpeed(), STRONG_WIND_THRESHOLD);
+                    w.getWindSpeed(), windThreshold);
             generatedAlerts.add(buildAlert(batch, "STRONG_WIND", desc));
         }
 
         // ── 6. Cảnh báo độ ẩm cao ─────────────────────────────────────────
-        if (w.getRelativeHumidity() != null && w.getRelativeHumidity() >= HIGH_HUMIDITY_THRESHOLD) {
+        if (w.getRelativeHumidity() != null && w.getRelativeHumidity() >= humidityThreshold) {
             String desc = String.format(
                     "💧 ĐỘ ẨM RẤT CAO - Độ ẩm hiện tại: %d%% (ngưỡng cảnh báo: %d%%). " +
                             "Nguy cơ cao phát sinh nấm bệnh và sâu bệnh hại. " +
                             "Kiểm tra cây thường xuyên, thông gió tốt và cân nhắc phòng ngừa bệnh kịp thời.",
-                    w.getRelativeHumidity(), HIGH_HUMIDITY_THRESHOLD);
+                    w.getRelativeHumidity(), humidityThreshold);
             generatedAlerts.add(buildAlert(batch, "HIGH_HUMIDITY", desc));
         }
 
@@ -212,48 +221,43 @@ public class WeatherCheckService {
                     messagingTemplate.convertAndSend("/topic/weather/" + batch.getPBatchId(), weatherData);
                 }
 
-                // Mảng lưu tạm các type và desc cảnh báo
-                List<String[]> tempAlerts = new ArrayList<>();
-
-                if (w.getWeatherCode() != null && w.getWeatherCode() >= STORM_WEATHER_CODE) {
-                    tempAlerts.add(new String[] { "STORM",
-                            String.format(
-                                    "⛈️ CẢNH BÁO GIÔNG BÃO - Mã thời tiết: %d. Hãy đảm bảo an toàn cho cây trồng.",
-                                    w.getWeatherCode()) });
-                }
-                if (w.getPrecipitationProbability() != null
-                        && w.getPrecipitationProbability() >= RAIN_PROBABILITY_THRESHOLD) {
-                    tempAlerts.add(new String[] { "RAIN_RISK",
-                            String.format("🌧️ NGUY CƠ MƯA LỚN - Xác suất: %d%%. Che phủ cây trồng.",
-                                    w.getPrecipitationProbability()) });
-                }
-                if (w.getTemperature() != null && w.getTemperature() >= HIGH_TEMP_THRESHOLD) {
-                    tempAlerts.add(new String[] { "HIGH_TEMP",
-                            String.format("🌡️ NHIỆT ĐỘ CAO - %.1f°C. Hãy tưới nước...", w.getTemperature()) });
-                }
-                if (w.getTemperature() != null && w.getTemperature() <= LOW_TEMP_THRESHOLD) {
-                    tempAlerts.add(new String[] { "LOW_TEMP",
-                            String.format("❄️ NHIỆT ĐỘ THẤP - %.1f°C. Che phủ chống sương giá.", w.getTemperature()) });
-                }
-                if (w.getWindSpeed() != null && w.getWindSpeed() >= STRONG_WIND_THRESHOLD) {
-                    tempAlerts.add(new String[] { "STRONG_WIND",
-                            String.format("💨 GIÓ MẠNH - %.1f km/h.", w.getWindSpeed()) });
-                }
-                if (w.getRelativeHumidity() != null && w.getRelativeHumidity() >= HIGH_HUMIDITY_THRESHOLD) {
-                    tempAlerts.add(new String[] { "HIGH_HUMIDITY",
-                            String.format("💧 ĐỘ ẨM CAO - %d%%. Tuần hoàn không khí...", w.getRelativeHumidity()) });
-                }
-
-                if (tempAlerts.isEmpty())
-                    continue;
-
-                // Áp dụng cảnh báo cho tất cả Batch ở location này
                 List<WeatherAlert> allAlertsToSave = new ArrayList<>();
                 for (PlantingBatch batch : batchesAtLocation) {
-                    for (String[] alertInfo : tempAlerts) {
-                        allAlertsToSave.add(buildAlert(batch, alertInfo[0], alertInfo[1]));
+                    Double highTempThreshold = batch.getCrop() != null && batch.getCrop().getHighTempThreshold() != null ? batch.getCrop().getHighTempThreshold() : DEFAULT_HIGH_TEMP_THRESHOLD;
+                    Double lowTempThreshold = batch.getCrop() != null && batch.getCrop().getLowTempThreshold() != null ? batch.getCrop().getLowTempThreshold() : DEFAULT_LOW_TEMP_THRESHOLD;
+                    Integer rainProbThreshold = batch.getCrop() != null && batch.getCrop().getRainProbabilityThreshold() != null ? batch.getCrop().getRainProbabilityThreshold() : DEFAULT_RAIN_PROBABILITY_THRESHOLD;
+                    Double windThreshold = batch.getCrop() != null && batch.getCrop().getStrongWindThreshold() != null ? batch.getCrop().getStrongWindThreshold() : DEFAULT_STRONG_WIND_THRESHOLD;
+                    Integer humidityThreshold = batch.getCrop() != null && batch.getCrop().getHighHumidityThreshold() != null ? batch.getCrop().getHighHumidityThreshold() : DEFAULT_HIGH_HUMIDITY_THRESHOLD;
+                    Integer stormCodeThreshold = batch.getCrop() != null && batch.getCrop().getStormWeatherCode() != null ? batch.getCrop().getStormWeatherCode() : DEFAULT_STORM_WEATHER_CODE;
+
+                    if (w.getWeatherCode() != null && w.getWeatherCode() >= stormCodeThreshold) {
+                        String weatherName = weatherCodeToText(w.getWeatherCode());
+                        allAlertsToSave.add(buildAlert(batch, "STORM", 
+                                String.format("⚠️ CẢNH BÁO THỜI TIẾT - Hiện tại: %s. Hãy đảm bảo an toàn cho cây trồng.", weatherName)));
+                    }
+                    if (w.getPrecipitationProbability() != null && w.getPrecipitationProbability() >= rainProbThreshold) {
+                        allAlertsToSave.add(buildAlert(batch, "RAIN_RISK", 
+                                String.format("🌧️ NGUY CƠ MƯA LỚN - Xác suất: %d%%. Che phủ cây trồng.", w.getPrecipitationProbability())));
+                    }
+                    if (w.getTemperature() != null && w.getTemperature() >= highTempThreshold) {
+                        allAlertsToSave.add(buildAlert(batch, "HIGH_TEMP", 
+                                String.format("🌡️ NHIỆT ĐỘ CAO - %.1f°C. Hãy tưới nước...", w.getTemperature())));
+                    }
+                    if (w.getTemperature() != null && w.getTemperature() <= lowTempThreshold) {
+                        allAlertsToSave.add(buildAlert(batch, "LOW_TEMP", 
+                                String.format("❄️ NHIỆT ĐỘ THẤP - %.1f°C. Che phủ chống sương giá.", w.getTemperature())));
+                    }
+                    if (w.getWindSpeed() != null && w.getWindSpeed() >= windThreshold) {
+                        allAlertsToSave.add(buildAlert(batch, "STRONG_WIND", 
+                                String.format("💨 GIÓ MẠNH - %.1f km/h.", w.getWindSpeed())));
+                    }
+                    if (w.getRelativeHumidity() != null && w.getRelativeHumidity() >= humidityThreshold) {
+                        allAlertsToSave.add(buildAlert(batch, "HIGH_HUMIDITY", 
+                                String.format("💧 ĐỘ ẨM CAO - %d%%. Tuần hoàn không khí...", w.getRelativeHumidity())));
                     }
                 }
+
+                if (allAlertsToSave.isEmpty()) continue;
 
                 List<WeatherAlert> savedAlerts = weatherAlertRepository.saveAll(allAlertsToSave);
                 List<WeatherAlertDto> alertDtos = savedAlerts.stream().map(weatherAlertMapper::toDto).toList();
@@ -306,6 +310,23 @@ public class WeatherCheckService {
     }
 
     // -----------------------------------------------------------------------
+
+    private String weatherCodeToText(Integer code) {
+        if (code == null) return "Không xác định";
+        if (code == 0) return "Trời quang";
+        if (code <= 3) return "Nhiều mây";
+        if (code <= 9) return "Sương mù nhẹ";
+        if (code <= 19) return "Mưa phùn";
+        if (code <= 29) return "Mưa rào";
+        if (code <= 39) return "Tuyết";
+        if (code <= 49) return "Sương mù";
+        if (code <= 59) return "Mưa phùn nặng hạt";
+        if (code <= 69) return "Mưa vừa đến to";
+        if (code <= 79) return "Tuyết rơi nhiều";
+        if (code <= 84) return "Mưa rào lớn";
+        if (code <= 94) return "Tuyết rào";
+        return "Giông bão";
+    }
 
     private WeatherAlert buildAlert(PlantingBatch batch, String alertType, String description) {
         return WeatherAlert.builder()

@@ -13,6 +13,12 @@ public class CropMapper {
                 .cropName(entity.getCropName())
                 .variety(entity.getVariety())
                 .description(entity.getDescription())
+                .rainProbabilityThreshold(entity.getRainProbabilityThreshold())
+                .highTempThreshold(entity.getHighTempThreshold())
+                .lowTempThreshold(entity.getLowTempThreshold())
+                .strongWindThreshold(entity.getStrongWindThreshold())
+                .highHumidityThreshold(entity.getHighHumidityThreshold())
+                .stormWeatherCode(entity.getStormWeatherCode())
                 .build();
     }
 
@@ -23,6 +29,12 @@ public class CropMapper {
                 .cropName(dto.getCropName())
                 .variety(dto.getVariety())
                 .description(dto.getDescription())
+                .rainProbabilityThreshold(dto.getRainProbabilityThreshold())
+                .highTempThreshold(dto.getHighTempThreshold())
+                .lowTempThreshold(dto.getLowTempThreshold())
+                .strongWindThreshold(dto.getStrongWindThreshold())
+                .highHumidityThreshold(dto.getHighHumidityThreshold())
+                .stormWeatherCode(dto.getStormWeatherCode())
                 .build();
     }
 }

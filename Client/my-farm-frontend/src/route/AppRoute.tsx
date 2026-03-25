@@ -9,6 +9,7 @@ const Batches = lazy(() => import('../pages/batches/BatchList'));
 const BatchLifecycle = lazy(() => import('../pages/batches/BatchLifecycle'));
 const Processes = lazy(() => import('../pages/processes/GrowthProcess'));
 const Inventory = lazy(() => import('../pages/inventory/Inventory'));
+const Crops = lazy(() => import('../pages/crops/CropList'));
 const Tasks = lazy(() => import('../pages/tasks/TaskManagement'));
 const Calendar = lazy(() => import('../pages/tasks/FarmingCalendar'));
 const AIAssistant = lazy(() => import('../pages/ai-assistant/ImageAnalysis'));
@@ -35,6 +36,8 @@ const AppRoutes = () => {
 
                         <Route path="/processes" element={<Processes />} />
                         <Route path="/processes/:id" element={<GrowthProcessDetail />} />
+
+                        <Route path="/crops" element={<Crops />} />
 
                         <Route path="/inventory" element={<Inventory />} />
                         <Route path="/fertilizers" element={<FertilizerManagement />} />

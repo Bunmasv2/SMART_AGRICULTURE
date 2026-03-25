@@ -5,7 +5,8 @@ import {
     ArchiveBoxIcon,
     CalendarDaysIcon,
     SparklesIcon,
-    Cog6ToothIcon
+    Cog6ToothIcon,
+    TagIcon
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -24,6 +25,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     { name: 'Batches', path: '/batches', icon: MapIcon },
 
     { name: 'Processes', path: '/processes', icon: DocumentChartBarIcon },
+
+    { name: 'Crops', path: '/crops', icon: TagIcon },
 
     {
         name: 'Inventory',

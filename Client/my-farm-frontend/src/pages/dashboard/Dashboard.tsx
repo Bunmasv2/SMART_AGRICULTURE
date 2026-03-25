@@ -3,7 +3,6 @@ import {
     ExclamationTriangleIcon,
     CheckCircleIcon,
     MapPinIcon,
-    BeakerIcon,
     CpuChipIcon,
     CalendarDaysIcon,
     SparklesIcon,
@@ -13,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface WeatherCurrent {
@@ -43,6 +44,20 @@ interface DashboardWeather {
     locationCoords: string;
     weather: WeatherData | null;
     recentAlerts: AlertDto[];
+}
+
+interface BatchDto {
+    pBatchId: number;
+    batchName: string;
+    cropName: string;
+    startDate: string;
+}
+
+interface AiAnalysisDto {
+    analysisId: number;
+    batchName: string;
+    resultJson: string;
+    createdAt: string;
 }
 
 // ─── Alert display config ───────────────────────────────────────────────────
@@ -86,10 +101,15 @@ const API_BASE = 'http://localhost:8080/api';
 
 // ─── Main Dashboard ─────────────────────────────────────────────────────────
 export default function SmartFarmDashboard() {
+    const navigate = useNavigate();
     const [dashData, setDashData] = useState<DashboardWeather | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+    const [batches, setBatches] = useState<BatchDto[]>([]);
+    const [taskCount, setTaskCount] = useState<number>(0);
+    const [analyses, setAnalyses] = useState<AiAnalysisDto[]>([]);
 
     const fetchWeather = async () => {
         try {
@@ -111,10 +131,31 @@ export default function SmartFarmDashboard() {
         }
     };
 
+    const fetchOtherData = async () => {
+        try {
+            const [bRes, tRes, aRes] = await Promise.all([
+                axios.get(`${API_BASE}/planting-batches?status=ACTIVE`),
+                axios.get(`${API_BASE}/tasks?status=PENDING`),
+                axios.get(`${API_BASE}/ai-analyses`)
+            ]);
+            setBatches(bRes.data?.data || []);
+            setTaskCount((tRes.data?.data || []).length);
+            const rawAnalyses = aRes.data?.data || [];
+            rawAnalyses.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setAnalyses(rawAnalyses.slice(0, 2));
+        } catch (e) {
+            console.error("Fetch other data error", e);
+        }
+    };
+
     useEffect(() => {
         fetchWeather();
+        fetchOtherData();
         // Refresh mỗi 30 phút (khớp với scheduler backend)
-        const interval = setInterval(fetchWeather, 30 * 60 * 1000);
+        const interval = setInterval(() => {
+            fetchWeather();
+            fetchOtherData();
+        }, 30 * 60 * 1000);
         return () => clearInterval(interval);
     }, []);
 
@@ -194,8 +235,10 @@ export default function SmartFarmDashboard() {
                         >
                             <CalendarDaysIcon className="h-6 w-6 text-slate-600" />
                         </button>
-                        <button className="bg-[#2c9b4e] hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-green-200 flex items-center gap-2 active:scale-95">
-                            <span>+ Thêm Công Việc</span>
+                        <button
+                            onClick={() => navigate('/crops')}
+                            className="bg-[#2c9b4e] hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-green-200 flex items-center gap-2 active:scale-95">
+                            <span>+ Thêm Giống Cây</span>
                         </button>
                     </div>
                 </header>
@@ -293,15 +336,15 @@ export default function SmartFarmDashboard() {
 
                     {/* Quick Stats */}
                     <div className="md:col-span-4 grid grid-cols-2 gap-4">
-                        <QuickStat value="12" label="Lô Trồng" icon={<MapPinIcon />} color="green" />
-                        <QuickStat value="08" label="Nhiệm vụ" icon={<CheckCircleIcon />} color="blue" />
+                        <QuickStat value={batches.length < 10 ? '0' + batches.length : String(batches.length)} label="Lô Trồng" icon={<MapPinIcon />} color="green" />
+                        <QuickStat value={taskCount < 10 ? '0' + taskCount : String(taskCount)} label="Nhiệm vụ" icon={<CheckCircleIcon />} color="blue" />
                         <QuickStat
                             value={alerts.length > 0 ? String(alerts.length) : '0'}
                             label="Cảnh báo TT"
                             icon={<ExclamationTriangleIcon />}
                             color={alerts.length > 0 ? 'red' : 'green'}
                         />
-                        <QuickStat value="01" label="Cảnh báo AI" icon={<CpuChipIcon />} color="red" />
+                        <QuickStat value={analyses.length > 0 ? String(analyses.length) : '0'} label="Báo cáo AI" icon={<CpuChipIcon />} color="red" />
                     </div>
 
                     {/* Plots Progress */}
@@ -311,9 +354,24 @@ export default function SmartFarmDashboard() {
                             <button className="text-sm font-bold text-[#2c9b4e] hover:underline">Chi tiết tất cả</button>
                         </div>
                         <div className="space-y-6">
-                            <PlotItem name="Lô 01 - Chanh Bông Tím" stage="Nuôi trái" progress={85} health="high" />
-                            <PlotItem name="Lô 02 - Chanh Không Hạt" stage="Ra hoa" progress={45} health="medium" />
-                            <PlotItem name="Lô 03 - Chanh Giấy" stage="Cây con" progress={20} health="high" />
+                            {batches.length > 0 ? batches.slice(0, 4).map(b => {
+                                const start = new Date(b.startDate);
+                                const current = new Date();
+                                const days = Math.floor((current.getTime() - start.getTime()) / (1000 * 3600 * 24));
+                                const progress = Math.min(Math.max((days / 90) * 100, 5), 100);
+                                return (
+                                    <PlotItem
+                                        key={b.pBatchId}
+                                        name={`Lô ${b.pBatchId < 10 ? '0' + b.pBatchId : b.pBatchId} - ${b.batchName}`}
+                                        stage={`${days > 0 ? days : 0} ngày tuổi`}
+                                        progress={progress}
+                                        health={progress > 80 ? 'medium' : 'high'}
+                                        onClick={() => navigate(`/batches/${b.pBatchId}`)}
+                                    />
+                                );
+                            }) : (
+                                <p className="text-sm text-slate-400 font-medium italic">Không có Lô trồng nào đang hoạt động</p>
+                            )}
                         </div>
                     </div>
 
@@ -325,18 +383,46 @@ export default function SmartFarmDashboard() {
                                 <h3 className="text-lg font-bold tracking-tight italic">AI Assistant Insight</h3>
                             </div>
                             <div className="space-y-5">
-                                <div className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer">
-                                    <p className="text-sm text-lime-100 leading-relaxed font-medium">
-                                        <span className="text-lime-400 font-bold">● Lô 02:</span> Phát hiện bất thường qua camera lúc 08:24. Hình thái lá nghi nhiễm <span className="underline decoration-lime-500">Sâu vẽ bùa</span>.
-                                    </p>
-                                </div>
-                                <div className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer">
-                                    <p className="text-sm text-lime-100 leading-relaxed font-medium">
-                                        <span className="text-lime-400 font-bold">● Tối ưu tưới:</span> Độ ẩm Lô 01 đạt 85%. Đã tự động điều chỉnh giảm 20% lượng nước tưới chiều nay.
-                                    </p>
-                                </div>
+                                {analyses.length > 0 ? analyses.map(ai => {
+                                    let msg: React.ReactNode = <span className="underline decoration-lime-500">{ai.resultJson || 'Đã phân tích'}</span>;
+                                    try {
+                                        const parsed = JSON.parse(ai.resultJson);
+                                        // Attempt to extract helpful properties
+                                        if (parsed.disease_class || parsed.care_recommendation) {
+                                            msg = (
+                                                <div className="mt-1">
+                                                    {parsed.disease_class && <span className="text-lime-300 font-bold bg-lime-900/40 px-2 py-0.5 rounded-md inline-block mb-1">{parsed.disease_class}</span>}
+                                                    {parsed.care_recommendation && <span className="block text-xs text-lime-200/80 italic line-clamp-2">{parsed.care_recommendation}</span>}
+                                                </div>
+                                            );
+                                        } else {
+                                            const txt = parsed.disease || parsed.label || parsed.analysis || parsed.recommendation || ai.resultJson;
+                                            msg = <span className="underline decoration-lime-500">{String(txt)}</span>;
+                                        }
+                                    } catch (e) {
+                                        // Just use string if not json
+                                    }
+
+                                    const d = new Date(ai.createdAt);
+                                    return (
+                                        <div key={ai.analysisId} onClick={() => navigate('/ai-assistant')} className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer group">
+                                            <div className="text-sm text-lime-100 leading-relaxed font-medium">
+                                                <span className="text-lime-400 font-bold group-hover:text-lime-300">● Lô: {ai.batchName}</span> <span className="text-xs opacity-70">({d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})</span>
+                                                {msg}
+                                            </div>
+                                        </div>
+                                    );
+                                }) : (
+                                    <div className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer">
+                                        <p className="text-sm text-lime-100 leading-relaxed font-medium">
+                                            Chưa có dữ liệu phân tích sức khỏe cho vườn của bạn.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                            <button className="mt-8 w-full py-3 bg-lime-500 hover:bg-lime-400 text-green-950 rounded-xl font-black transition-all shadow-lg shadow-lime-900/20 active:scale-95">
+                            <button
+                                onClick={() => navigate('/ai-assistant')}
+                                className="mt-6 w-full py-3 bg-lime-500 hover:bg-lime-400 text-green-950 rounded-xl font-black transition-all shadow-lg shadow-lime-900/20 active:scale-95">
                                 XEM CHIẾN LƯỢC CHĂM SÓC
                             </button>
                         </div>
@@ -397,11 +483,12 @@ interface PlotItemProps {
     stage: string;
     progress: number;
     health: 'high' | 'medium' | string;
+    onClick?: () => void;
 }
 
-function PlotItem({ name, stage, progress, health }: PlotItemProps) {
+function PlotItem({ name, stage, progress, health, onClick }: PlotItemProps) {
     return (
-        <div className="group cursor-pointer">
+        <div className="group cursor-pointer" onClick={onClick}>
             <div className="flex justify-between items-end mb-2 px-1">
                 <div>
                     <h4 className="font-bold text-slate-800 group-hover:text-[#2c9b4e] transition-colors">{name}</h4>
