@@ -4,7 +4,8 @@ import type {
   AiAnalysisDto,
   ApiResponse,
   AnalysisHistoryItem,
-  ParsedResultJson
+  ParsedResultJson,
+  PlantingBatchOption
 } from '../models/AiAnalysis';
 
 // Base URL của Spring Boot API
@@ -15,6 +16,9 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds timeout cho AI analysis
 });
+
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 // Helper function để kiểm tra API response hợp lệ
 function isValidApiResponse<T>(response: unknown): response is ApiResponse<T> {
@@ -45,14 +49,23 @@ export const aiAnalysisService = {
       console.log('🏷️ BatchId:', batchId);
 
       // Validate file type client-side
-      if (!file.type.startsWith('image/')) {
-        throw new Error('File phải là ảnh (JPG, PNG, etc.)');
+      if (!ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+        throw new Error('File phải là ảnh JPG, PNG hoặc WEBP.');
+      }
+
+      if (file.size > MAX_IMAGE_SIZE) {
+        throw new Error('Kích thước ảnh vượt quá 10MB. Vui lòng chọn ảnh nhỏ hơn.');
+      }
+
+      const normalizedBatchId = Number(batchId);
+      if (!Number.isInteger(normalizedBatchId) || normalizedBatchId <= 0) {
+        throw new Error('Mã lô không hợp lệ. Vui lòng chọn lô trồng trước khi phân tích.');
       }
 
       // Đóng gói file vào FormData
       const formData = new FormData();
       formData.append('imageFile', file);
-      formData.append('pBatchId', batchId);
+      formData.append('pBatchId', String(normalizedBatchId));
 
       console.log('📦 FormData created:', {
         imageFile: file.name,
@@ -119,6 +132,44 @@ export const aiAnalysisService = {
   },
 
   /**
+   * Lấy danh sách lô trồng cho dropdown chọn Mã lô
+   * GET /api/planting-batches
+   */
+  async getPlantingBatchOptions(): Promise<PlantingBatchOption[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<PlantingBatchOption[]>>('/planting-batches');
+
+      if (!isValidApiResponse<PlantingBatchOption[]>(response.data)) {
+        console.warn('Invalid planting batch response structure, returning empty array');
+        return [];
+      }
+
+      const data = response.data.data;
+      if (!Array.isArray(data)) {
+        console.warn('Planting batch response data is not an array, returning empty array');
+        return [];
+      }
+
+      return data
+        .filter((item): item is PlantingBatchOption =>
+          Boolean(item) &&
+          Number.isInteger(item.pBatchId) &&
+          typeof item.batchName === 'string' &&
+          item.batchName.trim().length > 0
+        )
+        .sort((a, b) => b.pBatchId - a.pBatchId);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.code === 'ERR_NETWORK' || axiosError.code === 'ECONNREFUSED') {
+        console.warn('Backend not available, returning empty planting batch list');
+        return [];
+      }
+      console.error('Error fetching planting batch options:', error);
+      return [];
+    }
+  },
+
+  /**
    * Lấy lịch sử phân tích theo batchId
    * GET /api/ai-analyses?pBatchId={batchId}
    *
@@ -147,7 +198,9 @@ export const aiAnalysisService = {
       }
 
       // Transform AiAnalysisDto[] sang AnalysisHistoryItem[]
-      return data.map((dto) => transformDtoToHistoryItem(dto));
+      return data
+        .map((dto) => transformDtoToHistoryItem(dto))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } catch (error) {
       const axiosError = error as AxiosError;
       // Network error - backend không chạy
@@ -182,7 +235,9 @@ export const aiAnalysisService = {
         return [];
       }
 
-      return data.map((dto) => transformDtoToHistoryItem(dto));
+      return data
+        .map((dto) => transformDtoToHistoryItem(dto))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } catch (error) {
       const axiosError = error as AxiosError;
       // Network error - backend không chạy

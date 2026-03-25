@@ -1,17 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Upload, RefreshCw, CheckCircle, AlertTriangle, AlertCircle, 
-  Eye, Plus, Sun, Cloud, Droplets, FileText, ScanLine, ChevronLeft 
+  Upload, RefreshCw, CheckCircle, AlertCircle,
+  Eye, Plus, Droplets, ScanLine, ChevronLeft
 } from 'lucide-react';
 import { useRef } from 'react';
+import aiAnalysisService from '../../services/aiAnalysisService';
+import { HistoryListCard } from '../../components/cards/HistoryListCard';
+import type {
+  AiAnalysisResponse,
+  AnalysisHistoryItem,
+  WeatherInfo,
+  PlantingBatchOption,
+} from '../../models/AiAnalysis';
 
 // ─── Types & Mock Data ──────────────────────────────────────────────────
-interface WeatherInfo { condition: string; temperature: number; humidity: number; location: string; }
-interface AiAnalysisResponse { diseaseClass: string; confidence: number; soilCondition: string; careRecommendation: string; }
-interface AnalysisHistoryItem { id: string; diseaseClass: string; date: string; batchName?: string; batchId?: string; }
+interface InfoItem {
+  label: string;
+  value: string | number;
+  unit?: string;
+}
 
 const mockWeatherInfo: WeatherInfo = { condition: 'Nắng nhẹ', temperature: 28, humidity: 72, location: 'Vĩnh Long, Việt Nam' };
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 const getDiseaseColor = (cls: string) => {
   const n = cls.toLowerCase();
@@ -52,15 +64,50 @@ const ScanningOverlay = () => (
 );
 
 // ─── Image Upload Section ──────────────────────────────────────────────────
-const ImageUploadSection = ({ onAnalyze, isScanning }: { onAnalyze: (f: File) => void; isScanning: boolean }) => {
+const ImageUploadSection = ({
+  onAnalyze,
+  isScanning,
+  onValidationError,
+}: {
+  onAnalyze: (f: File) => void;
+  isScanning: boolean;
+  onValidationError: (message: string) => void;
+}) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const setImg = (file: File) => {
     if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const validateAndSetImage = (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+      onValidationError('Ảnh không hợp lệ. Vui lòng chọn JPG, PNG hoặc WEBP.');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      onValidationError('Kích thước ảnh vượt quá 10MB. Vui lòng chọn ảnh nhỏ hơn.');
+      return;
+    }
+
+    onValidationError('');
+    setImg(file);
   };
 
   return (
@@ -95,8 +142,16 @@ const ImageUploadSection = ({ onAnalyze, isScanning }: { onAnalyze: (f: File) =>
         )}
       </div>
 
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if (f?.type.startsWith('image/')) setImg(f); }} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+        className="hidden"
+        onChange={e => {
+          validateAndSetImage(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
 
       <div className="flex gap-2 mt-4 shrink-0">
         {!previewUrl ? (
@@ -129,7 +184,7 @@ const ImageUploadSection = ({ onAnalyze, isScanning }: { onAnalyze: (f: File) =>
 };
 
 // ─── Shared Info Strip Component ──────────────────────────────────────────
-const InfoStrip = ({ data, className = "" }: { data: any[], className?: string }) => (
+const InfoStrip = ({ data, className = "" }: { data: InfoItem[]; className?: string }) => (
   <div className={`flex items-center divide-x divide-slate-100 h-full w-full ${className}`}>
     {data.map((item, i) => (
       <div 
@@ -162,7 +217,7 @@ const ResultSection = ({ result, isLoading }: { result: AiAnalysisResponse | nul
     </div>
   );
 
-  const { accent } = getDiseaseColor(result.diseaseClass);
+  const { accent } = getDiseaseColor(result.diseaseClass || 'unknown');
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4 px-5 py-4 rounded-xl border" style={{ backgroundColor: `${accent}08`, borderColor: `${accent}20` }}>
@@ -189,69 +244,143 @@ const ResultSection = ({ result, isLoading }: { result: AiAnalysisResponse | nul
   );
 };
 
-// ─── History Section ───────────────────────────────────────────────────────
-const HistorySection = ({ histories }: { histories: AnalysisHistoryItem[] }) => (
-  <div className="flex flex-col h-full overflow-hidden">
-    <div className="flex items-center justify-between mb-4 shrink-0">
-      <div className="flex items-center gap-2">
-        <FileText className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Lịch sử lô trồng</span>
-      </div>
-      <span className="text-[10px] font-bold text-slate-300 bg-slate-50 px-2 py-0.5 rounded-full">{histories.length}</span>
-    </div>
-    <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
-      {histories.length === 0 ? (
-        <div className="text-center py-10 text-slate-300 text-xs font-medium italic">Chưa có dữ liệu phân tích</div>
-      ) : (
-        histories.map((item, idx) => {
-          const { accent } = getDiseaseColor(item.diseaseClass);
-          return (
-            <div key={idx} className="group flex items-center gap-3 p-3 rounded-lg border border-slate-50 hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer">
-              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: accent }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-700 truncate">{item.diseaseClass}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">{new Date(item.date).toLocaleString('vi-VN')}</p>
-              </div>
-              <ChevronLeft className="w-3.5 h-3.5 text-slate-300 rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          );
-        })
-      )}
-    </div>
-  </div>
-);
-
 // ─── Main Page ─────────────────────────────────────────────────────────────
 export default function ImageAnalysis() {
   const { batchId } = useParams();
   const navigate = useNavigate();
   const [isScanning, setIsScanning] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [isBatchLoading, setIsBatchLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AiAnalysisResponse | null>(null);
   const [historyList, setHistoryList] = useState<AnalysisHistoryItem[]>([]);
+  const [batchOptions, setBatchOptions] = useState<PlantingBatchOption[]>([]);
+  const [selectedBatchId, setSelectedBatchId] = useState<string>('');
+  const [error, setError] = useState<string>('');
+
+  const routeBatchId = useMemo(() => {
+    if (!batchId) {
+      return null;
+    }
+    const parsed = Number(batchId);
+    return Number.isInteger(parsed) && parsed > 0 ? String(parsed) : null;
+  }, [batchId]);
+
+  useEffect(() => {
+    if (routeBatchId) {
+      setSelectedBatchId(routeBatchId);
+      return;
+    }
+    setSelectedBatchId('');
+  }, [routeBatchId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadBatchOptions = async () => {
+      setIsBatchLoading(true);
+      const options = await aiAnalysisService.getPlantingBatchOptions();
+      if (isMounted) {
+        setBatchOptions(options);
+      }
+      if (isMounted) {
+        setIsBatchLoading(false);
+      }
+    };
+
+    void loadBatchOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHistory = async () => {
+      if (!selectedBatchId) {
+        if (isMounted) {
+          setHistoryList([]);
+          setIsHistoryLoading(false);
+        }
+        return;
+      }
+
+      setIsHistoryLoading(true);
+      try {
+        const history = await aiAnalysisService.getAnalysisHistory(selectedBatchId);
+        if (isMounted) {
+          setHistoryList(history);
+        }
+      } finally {
+        if (isMounted) {
+          setIsHistoryLoading(false);
+        }
+      }
+    };
+
+    void loadHistory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedBatchId]);
+
+  const selectedBatch = useMemo(
+    () => batchOptions.find((item) => String(item.pBatchId) === selectedBatchId),
+    [batchOptions, selectedBatchId]
+  );
 
   // Dữ liệu dùng chung cho cả Header và Sub-header
   const headerData = [
-    { label: 'Mã lô', value: batchId || 'N/A' },
+    { label: 'Mã lô', value: selectedBatchId || 'N/A' },
+    { label: 'Tên lô', value: selectedBatch?.batchName || 'Chưa chọn' },
     { label: 'Vị trí', value: mockWeatherInfo.location },
     { label: 'Ảnh quét', value: historyList.length, unit: 'lần' },
-    { label: 'Phát hiện', value: historyList.filter(h => !h.diseaseClass.toLowerCase().includes('healthy')).length, unit: 'ca' },
+    { label: 'Phát hiện', value: historyList.filter(h => !(h.diseaseClass || '').toLowerCase().includes('healthy')).length, unit: 'ca' },
     { label: 'Nhiệt độ', value: mockWeatherInfo.temperature, unit: '°C' },
     { label: 'Độ ẩm', value: mockWeatherInfo.humidity, unit: '%' },
   ];
 
   const handleAnalyzeImage = async (file: File) => {
+    if (!selectedBatchId) {
+      setError('Thiếu mã lô hợp lệ. Không thể gửi yêu cầu phân tích.');
+      return;
+    }
+
+    setError('');
     setIsScanning(true);
     try {
-      await new Promise(r => setTimeout(r, 2000));
-      const mockResult: AiAnalysisResponse = {
-        diseaseClass: 'Healthy Leaf',
-        confidence: 0.94,
-        soilCondition: 'Đất tơi xốp, độ ẩm lý tưởng.',
-        careRecommendation: 'Tiếp tục duy trì chế độ tưới tiêu hiện tại.',
-      };
-      setAiResult(mockResult);
-      setHistoryList(prev => [{ id: Date.now().toString(), diseaseClass: mockResult.diseaseClass, date: new Date().toISOString() }, ...prev]);
-    } finally { setIsScanning(false); }
+      console.log('📡 Calling API...');
+      // Gọi API phân tích ảnh
+      const result = await aiAnalysisService.analyzeImage(file, selectedBatchId);
+
+      console.log('✅ Analysis successful:', result);
+      // Cập nhật kết quả phân tích
+      setAiResult(result);
+
+      // Refresh lịch sử sau khi phân tích thành công (vì backend vừa lưu record mới)
+      try {
+        const updatedHistory = await aiAnalysisService.getAnalysisHistory(selectedBatchId);
+        setHistoryList(updatedHistory);
+
+      } catch (historyError) {
+        console.warn('Failed to refresh history after analysis:', historyError);
+      }
+
+    } catch (err) {
+      // Xử lý lỗi
+      console.error('❌ Error analyzing image:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi phân tích ảnh';
+      setError(errorMessage);
+
+      // Hiển thị thông báo lỗi cho user
+      alert(errorMessage + '. Vui lòng thử lại.');
+
+    } finally {
+      // Luôn tắt trạng thái scanning
+      setIsScanning(false);
+    }
   };
 
   return (
@@ -273,7 +402,47 @@ export default function ImageAnalysis() {
         {/* CỘT TRÁI: Upload + Sub-Header */}
         <div className="flex-1 flex flex-col bg-white overflow-hidden">
           <div className="flex-1 p-8 overflow-y-auto">
-            <ImageUploadSection onAnalyze={handleAnalyzeImage} isScanning={isScanning} />
+            {error && (
+              <div className="mb-4 p-3 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 flex items-center gap-2 text-xs font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label htmlFor="batch-select" className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                Mã lô
+              </label>
+              <select
+                id="batch-select"
+                value={selectedBatchId}
+                disabled={isBatchLoading}
+                onChange={(event) => {
+                  const nextBatchId = event.target.value;
+                  setSelectedBatchId(nextBatchId);
+                  setAiResult(null);
+                  if (nextBatchId) {
+                    navigate(`/ai-assistant/${nextBatchId}`);
+                  } else {
+                    navigate('/ai-assistant');
+                  }
+                }}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 disabled:bg-slate-50 disabled:text-slate-400"
+              >
+                <option value="">Chọn lô trồng để phân tích</option>
+                {batchOptions.map((batch) => (
+                  <option key={batch.pBatchId} value={String(batch.pBatchId)}>
+                    {batch.pBatchId} - {batch.batchName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <ImageUploadSection
+              onAnalyze={handleAnalyzeImage}
+              isScanning={isScanning}
+              onValidationError={setError}
+            />
           </div>
           
           {/* Bottom padding decor */}
@@ -294,7 +463,7 @@ export default function ImageAnalysis() {
           {/* History Area */}
           <div className="flex-1 min-h-0 px-8 pb-8 flex flex-col overflow-hidden">
             <div className="border-t border-slate-100 pt-6 h-full flex flex-col">
-              <HistorySection histories={historyList} />
+              <HistoryListCard histories={historyList} isLoading={isHistoryLoading} />
             </div>
           </div>
         </div>

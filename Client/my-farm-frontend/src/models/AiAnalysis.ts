@@ -47,3 +47,10 @@ export interface WeatherInfo {
   condition: string;
   humidity: number;
 }
+
+// DTO lô trồng dùng cho dropdown chọn Mã lô
+export interface PlantingBatchOption {
+  pBatchId: number;
+  batchName: string;
+  status?: string;
+}
