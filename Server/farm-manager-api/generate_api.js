@@ -443,7 +443,7 @@ const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 models.forEach(m => {
     const lowerName = m.name.charAt(0).toLowerCase() + m.name.slice(1);
-    
+
     // 1. Entity
     const entityCode = `package ${pkg}.entity;
 
@@ -490,7 +490,7 @@ ${dtoFields}
     let toDtoMappings = m.fields.map(f => {
         if (f.isRel) {
             return `        if (entity.get${capitalize(f.entityVar)}() != null) {
-            dto.set${capitalize(f.name)}(entity.get${capitalize(f.entityVar)}().get${capitalize(f.name.replace('Id',''))}Id());
+            dto.set${capitalize(f.name)}(entity.get${capitalize(f.entityVar)}().get${capitalize(f.name.replace('Id', ''))}Id());
         }`;
         } else {
             return `        dto.set${capitalize(f.name)}(entity.get${capitalize(f.name)}());`;
@@ -501,7 +501,7 @@ ${dtoFields}
         if (f.isRel) {
             return `        if (dto.get${capitalize(f.name)}() != null) {
             ${f.entityRef} ${f.entityVar} = new ${f.entityRef}();
-            ${f.entityVar}.set${capitalize(f.name.replace('Id',''))}Id(dto.get${capitalize(f.name)}());
+            ${f.entityVar}.set${capitalize(f.name.replace('Id', ''))}Id(dto.get${capitalize(f.name)}());
             entity.set${capitalize(f.entityVar)}(${f.entityVar});
         }`;
         } else {
