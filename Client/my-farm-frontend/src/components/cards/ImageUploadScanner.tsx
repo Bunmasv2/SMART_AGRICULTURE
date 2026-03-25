@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Upload, X, RefreshCw } from 'lucide-react';
+import { Upload, RefreshCw } from 'lucide-react';
 
 interface ImageUploadScannerProps {
   onAnalyze: (file: File) => void;
@@ -116,110 +116,21 @@ const ScanningAnimation = () => {
 
 export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScannerProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [processedFile, setProcessedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /**
-   * Resize image to 224x224 for MobileNetV2
-   * Uses center crop to maintain aspect ratio without distortion
-   */
-  const resizeImageTo224x224 = async (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      // Step 1: Read file as data URL
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        const img = new Image();
-
-        img.onload = () => {
-          // Step 2: Create canvas with target size 224x224
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            reject(new Error('Cannot get canvas context'));
-            return;
-          }
-
-          const targetSize = 224;
-          canvas.width = targetSize;
-          canvas.height = targetSize;
-
-          // Step 3: Calculate center crop dimensions
-          // Determine which dimension to use as reference (the smaller ratio)
-          const scale = Math.max(
-            targetSize / img.width,
-            targetSize / img.height
-          );
-
-          // Scaled dimensions
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-
-          // Center crop offsets
-          const offsetX = (targetSize - scaledWidth) / 2;
-          const offsetY = (targetSize - scaledHeight) / 2;
-
-          // Step 4: Draw image on canvas with center crop
-          // Fill with white background first (in case of transparency)
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, targetSize, targetSize);
-
-          // Draw the image centered and scaled
-          ctx.drawImage(
-            img,
-            0, 0, img.width, img.height,           // Source rectangle
-            offsetX, offsetY, scaledWidth, scaledHeight  // Destination rectangle
-          );
-
-          // Step 5: Convert canvas to Blob then to File
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Canvas to Blob conversion failed'));
-                return;
-              }
-
-              // Create new File object with original filename
-              const resizedFile = new File(
-                [blob],
-                file.name,
-                { type: 'image/jpeg', lastModified: Date.now() }
-              );
-
-              resolve(resizedFile);
-            },
-            'image/jpeg',
-            0.95  // High quality JPEG (95%)
-          );
-        };
-
-        img.onerror = () => reject(new Error('Image load failed'));
-        img.src = e.target?.result as string;
-      };
-
-      reader.onerror = () => reject(new Error('File read failed'));
-      reader.readAsDataURL(file);
-    });
+  const setImageState = (file: File) => {
+    if (previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      try {
-        // Resize image to 224x224
-        const resized = await resizeImageTo224x224(file);
-        setProcessedFile(resized);
-
-        // Create preview URL from resized file
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewUrl(reader.result as string);
-        };
-        reader.readAsDataURL(resized);
-      } catch (error) {
-        console.error('Image resize failed:', error);
-      }
+      setImageState(file);
     }
   };
 
@@ -231,44 +142,34 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
     event.preventDefault();
   };
 
-  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const file = event.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      try {
-        // Resize image to 224x224
-        const resized = await resizeImageTo224x224(file);
-        setProcessedFile(resized);
-
-        // Create preview URL from resized file
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewUrl(reader.result as string);
-        };
-        reader.readAsDataURL(resized);
-      } catch (error) {
-        console.error('Image resize failed:', error);
-      }
+      setImageState(file);
     }
   };
 
   const handleRemoveImage = () => {
+    if (previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl(null);
-    setProcessedFile(null);
+    setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleAnalyze = () => {
-    if (processedFile && !isScanning) {
+    if (selectedFile && !isScanning) {
       console.log('🔍 ImageUploadScanner: Starting analysis...');
-      console.log('📁 File:', processedFile.name, processedFile.size, 'bytes');
-      console.log('📏 Type:', processedFile.type);
-      onAnalyze(processedFile);
+      console.log('📁 File:', selectedFile.name, selectedFile.size, 'bytes');
+      console.log('📏 Type:', selectedFile.type);
+      onAnalyze(selectedFile);
     } else {
       console.warn('⚠️ Cannot analyze:', {
-        hasFile: !!processedFile,
+        hasFile: !!selectedFile,
         isScanning
       });
     }
@@ -280,7 +181,7 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
         Tải ảnh lên để phân tích
       </h3>
 
-      {/* Upload Area - Square aspect ratio for 224x224 display */}
+      {/* Upload Area */}
       <div className="mb-4 w-full max-w-sm mx-auto">
         <div
           onClick={!previewUrl ? handleClick : undefined}
@@ -347,9 +248,9 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
         <div className="space-y-3">
           <button
             onClick={handleAnalyze}
-            disabled={!processedFile || isScanning}
+            disabled={!selectedFile || isScanning}
             className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-              !processedFile || isScanning
+              !selectedFile || isScanning
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-md hover:shadow-lg'
             }`}

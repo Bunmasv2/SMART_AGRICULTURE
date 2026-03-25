@@ -1,15 +1,17 @@
 package com.smartfarm.api.repository;
 
-import com.smartfarm.api.entity.AiAnalysis;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
+
+import com.smartfarm.api.entity.AiAnalysis;
 
 @Repository
-public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
+public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Integer> {
     /**
      * Tìm tất cả AiAnalysis theo pBatchId, sắp xếp theo ngày tạo giảm dần (mới nhất trước)
      */

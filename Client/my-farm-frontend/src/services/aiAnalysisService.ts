@@ -34,7 +34,7 @@ export const aiAnalysisService = {
    * Gửi ảnh lên server để phân tích bằng AI
    * POST /api/ai-analyses/analyze
    *
-   * @param file - File ảnh đã resize 224x224
+    * @param file - File ảnh gốc từ người dùng
    * @param batchId - ID của lô trồng
    * @returns Promise<AiAnalysisResponse> - Kết quả phân tích từ AI
    */
