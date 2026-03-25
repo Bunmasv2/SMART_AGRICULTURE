@@ -24,6 +24,7 @@ public class InventoryBatchController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InventoryBatchDto>>> getAll(
+
             @RequestParam(required = false) Integer itemId,
             @RequestParam(required = false) String category) {
         try {
@@ -54,7 +55,8 @@ public class InventoryBatchController {
     public ResponseEntity<ApiResponse<InventoryBatchDto>> create(@RequestBody InventoryBatchDto dto) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(inventoryBatchService.create(dto), "InventoryBatch created successfully"));
+                    .body(ApiResponse.success(inventoryBatchService.create(dto),
+                            "InventoryBatch created successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));

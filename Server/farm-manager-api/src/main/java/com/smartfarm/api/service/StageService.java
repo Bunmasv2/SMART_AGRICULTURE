@@ -1,6 +1,7 @@
 package com.smartfarm.api.service;
 
 import com.smartfarm.api.dto.StageDto;
+import com.smartfarm.api.dto.StageSimpleDto;
 import com.smartfarm.api.entity.Stage;
 import com.smartfarm.api.mapper.StageMapper;
 import com.smartfarm.api.repository.StageRepository;
@@ -30,7 +31,13 @@ public class StageService {
     }
 
     public List<StageDto> findByProcessId(Integer processId) {
-        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toDto).collect(Collectors.toList());
+        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<StageSimpleDto> findSimpleByProcessId(Integer processId) {
+        return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toSimpleDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<StageDto> findById(Integer id) {

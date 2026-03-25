@@ -43,14 +43,16 @@ public class AiAnalysisService {
     }
 
     public Optional<AiAnalysisDto> update(Long id, AiAnalysisDto dto) {
-        if (!aiAnalysisRepository.existsById(id)) return Optional.empty();
+        if (!aiAnalysisRepository.existsById(id))
+            return Optional.empty();
         AiAnalysis entity = aiAnalysisMapper.toEntity(dto);
         entity.setAnalysisId(id);
         return Optional.of(aiAnalysisMapper.toDto(aiAnalysisRepository.save(entity)));
     }
 
     public boolean deleteById(Long id) {
-        if (!aiAnalysisRepository.existsById(id)) return false;
+        if (!aiAnalysisRepository.existsById(id))
+            return false;
         aiAnalysisRepository.deleteById(id);
         return true;
     }

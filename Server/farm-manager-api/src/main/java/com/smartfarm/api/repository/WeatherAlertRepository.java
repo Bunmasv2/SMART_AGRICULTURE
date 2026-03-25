@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface WeatherAlertRepository extends JpaRepository<WeatherAlert, Integer> {
+
     @Query("SELECT w FROM WeatherAlert w WHERE w.plantingBatch.pBatchId = :pBatchId")
     List<WeatherAlert> findByPlantingBatchPBatchId(Integer pBatchId);
 }

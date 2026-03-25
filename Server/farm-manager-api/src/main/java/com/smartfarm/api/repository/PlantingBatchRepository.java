@@ -13,7 +13,6 @@ public interface PlantingBatchRepository extends JpaRepository<PlantingBatch, In
     List<PlantingBatch> findByStatus(String status);
 
     List<PlantingBatch> findByCropCropId(Integer cropId);
-
     /**
      * Lấy PlantingBatch mới nhất có locationCoords.
      * Dùng @Query thay vì method name vì JPA parser không resolve đúng

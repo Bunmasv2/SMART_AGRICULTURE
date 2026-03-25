@@ -32,6 +32,9 @@ public class PlantingBatch {
     @Column(name = "area_m2")
     private Double areaM2;
 
+    @Column(name = "crop_count")
+    private Integer cropCount;
+
     @Column(name = "location_coords")
     private String locationCoords;
 

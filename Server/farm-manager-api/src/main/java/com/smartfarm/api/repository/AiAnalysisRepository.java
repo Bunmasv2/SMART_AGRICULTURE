@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 @Repository
+
 public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
     @Query("SELECT a FROM AiAnalysis a WHERE a.plantingBatch.pBatchId = :pBatchId")
     List<AiAnalysis> findByPlantingBatchPBatchId(Integer pBatchId);
