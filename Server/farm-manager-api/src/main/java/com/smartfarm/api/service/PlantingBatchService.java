@@ -101,7 +101,7 @@ public class PlantingBatchService {
         if (!plantingBatchRepository.existsById(id))
             return Optional.empty();
         PlantingBatch entity = plantingBatchMapper.toEntity(dto);
-        entity.setPBatchId(id);
+        entity.setpBatchId(id);
         return Optional.of(plantingBatchMapper.toDto(plantingBatchRepository.save(entity)));
     }
 

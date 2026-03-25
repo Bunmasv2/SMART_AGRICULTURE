@@ -39,16 +39,14 @@ public class RoleService {
     }
 
     public Optional<RoleDto> update(Integer id, RoleDto dto) {
-        if (!roleRepository.existsById(id))
-            return Optional.empty();
+        if (!roleRepository.existsById(id)) return Optional.empty();
         Role entity = roleMapper.toEntity(dto);
         entity.setRoleId(id);
         return Optional.of(roleMapper.toDto(roleRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!roleRepository.existsById(id))
-            return false;
+        if (!roleRepository.existsById(id)) return false;
         roleRepository.deleteById(id);
         return true;
     }

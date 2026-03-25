@@ -11,7 +11,6 @@ import java.util.List;
 
 @Repository
 public interface TaskTemplateRepository extends JpaRepository<TaskTemplate, Integer> {
-
     List<TaskTemplate> findByStageStageId(Integer stageId);
 
     // Sử dụng đúng @Query của JPA và thêm @Param cho chắc chắn

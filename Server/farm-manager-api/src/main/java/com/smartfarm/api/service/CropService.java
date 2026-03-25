@@ -39,16 +39,14 @@ public class CropService {
     }
 
     public Optional<CropDto> update(Integer id, CropDto dto) {
-        if (!cropRepository.existsById(id))
-            return Optional.empty();
+        if (!cropRepository.existsById(id)) return Optional.empty();
         Crop entity = cropMapper.toEntity(dto);
         entity.setCropId(id);
         return Optional.of(cropMapper.toDto(cropRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!cropRepository.existsById(id))
-            return false;
+        if (!cropRepository.existsById(id)) return false;
         cropRepository.deleteById(id);
         return true;
     }

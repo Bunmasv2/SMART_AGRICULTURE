@@ -50,16 +50,14 @@ public class StageService {
     }
 
     public Optional<StageDto> update(Integer id, StageDto dto) {
-        if (!stageRepository.existsById(id))
-            return Optional.empty();
+        if (!stageRepository.existsById(id)) return Optional.empty();
         Stage entity = stageMapper.toEntity(dto);
         entity.setStageId(id);
         return Optional.of(stageMapper.toDto(stageRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!stageRepository.existsById(id))
-            return false;
+        if (!stageRepository.existsById(id)) return false;
         stageRepository.deleteById(id);
         return true;
     }

@@ -16,4 +16,7 @@ public class InventoryBatchDto {
     private Double quantity;
     private LocalDate expiryDate;
     private LocalDateTime receivedDate;
+    private LocalDate productionDate;
+    private Double germinationRate;
+    private Double minThreshold;
 }

@@ -43,4 +43,8 @@ public class PlantingBatch {
 
     @Column(name = "status")
     private String status;
+
+    public void setpBatchId(Integer id) {
+        this.pBatchId = id;
+    }
 }

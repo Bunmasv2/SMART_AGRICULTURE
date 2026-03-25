@@ -13,6 +13,11 @@ const Tasks = lazy(() => import('../pages/tasks/TaskManagement'));
 const Calendar = lazy(() => import('../pages/tasks/FarmingCalendar'));
 const AIAssistant = lazy(() => import('../pages/ai-assistant/ImageAnalysis'));
 const Settings = lazy(() => import('../pages/settings/Settings'));
+const Login = lazy(() => import('../pages/auth/Login'));
+const Register = lazy(() => import('../pages/auth/Register'));
+const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
+const FertilizerManagement = lazy(() => import('../pages/inventory/FertilizerManagement'));
+const PesticideManagement = lazy(() => import('../pages/inventory/PesticideManagement'));
 
 const AppRoutes = () => {
     return (
@@ -32,6 +37,8 @@ const AppRoutes = () => {
                         <Route path="/processes/:id" element={<GrowthProcessDetail />} />
 
                         <Route path="/inventory" element={<Inventory />} />
+                        <Route path="/fertilizers" element={<FertilizerManagement />} />
+                        <Route path="/pesticides" element={<PesticideManagement />} />
 
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/calendar" element={<Calendar />} />
@@ -40,6 +47,10 @@ const AppRoutes = () => {
 
                         <Route path="/settings" element={<Settings />} />
                     </Route>
+
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -58,16 +58,14 @@ public class TaskService {
     }
 
     public Optional<TaskDto> update(Integer id, TaskDto dto) {
-        if (!taskRepository.existsById(id))
-            return Optional.empty();
+        if (!taskRepository.existsById(id)) return Optional.empty();
         Task entity = taskMapper.toEntity(dto);
         entity.setTaskId(id);
         return Optional.of(taskMapper.toDto(taskRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!taskRepository.existsById(id))
-            return false;
+        if (!taskRepository.existsById(id)) return false;
         taskRepository.deleteById(id);
         return true;
     }

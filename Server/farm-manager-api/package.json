@@ -1,0 +1,12 @@
+{
+  "name": "farm-manager-api-utils",
+  "version": "1.0.0",
+  "description": "Utility scripts for Farm Manager API",
+  "main": "generate_api.js",
+  "scripts": {
+    "generate-api": "node generate_api.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -37,7 +37,7 @@ public class AiAnalysisController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Long id) {
         return aiAnalysisService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,7 @@ public class AiAnalysisController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Integer id,
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Long id,
             @RequestBody AiAnalysisDto dto) {
         try {
             return aiAnalysisService.update(id, dto)
@@ -70,7 +70,7 @@ public class AiAnalysisController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
             if (aiAnalysisService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "AiAnalysis deleted successfully"));

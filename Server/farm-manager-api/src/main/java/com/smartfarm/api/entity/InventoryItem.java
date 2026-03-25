@@ -2,6 +2,7 @@ package com.smartfarm.api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
 @Table(name = "Inventory_Items")
@@ -28,4 +29,11 @@ public class InventoryItem {
 
     @Column(name = "min_threshold")
     private Double minThreshold;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "crop_id")
+    private Crop crop;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InventoryBatch> batches;
 }

@@ -15,10 +15,13 @@ public class InventoryBatchMapper {
                 .quantity(entity.getQuantity())
                 .expiryDate(entity.getExpiryDate())
                 .receivedDate(entity.getReceivedDate())
+                .productionDate(entity.getProductionDate())
+                .germinationRate(entity.getGerminationRate())
                 .build();
         if (entity.getItem() != null) {
             dto.setItemId(entity.getItem().getItemId());
             dto.setItemName(entity.getItem().getItemName());
+            dto.setMinThreshold(entity.getItem().getMinThreshold());
         }
         return dto;
     }
@@ -31,6 +34,8 @@ public class InventoryBatchMapper {
                 .quantity(dto.getQuantity())
                 .expiryDate(dto.getExpiryDate())
                 .receivedDate(dto.getReceivedDate())
+                .productionDate(dto.getProductionDate())
+                .germinationRate(dto.getGerminationRate())
                 .build();
         if (dto.getItemId() != null) {
             entity.setItem(InventoryItem.builder().itemId(dto.getItemId()).build());

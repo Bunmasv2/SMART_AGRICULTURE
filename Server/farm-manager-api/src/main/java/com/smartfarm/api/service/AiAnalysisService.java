@@ -30,11 +30,10 @@ public class AiAnalysisService {
     }
 
     public List<AiAnalysisDto> findByBatchId(Integer pBatchId) {
-        return aiAnalysisRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(aiAnalysisMapper::toDto)
-                .collect(Collectors.toList());
+        return aiAnalysisRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(aiAnalysisMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<AiAnalysisDto> findById(Integer id) {
+    public Optional<AiAnalysisDto> findById(Long id) {
         return aiAnalysisRepository.findById(id).map(aiAnalysisMapper::toDto);
     }
 
@@ -43,7 +42,7 @@ public class AiAnalysisService {
         return aiAnalysisMapper.toDto(aiAnalysisRepository.save(entity));
     }
 
-    public Optional<AiAnalysisDto> update(Integer id, AiAnalysisDto dto) {
+    public Optional<AiAnalysisDto> update(Long id, AiAnalysisDto dto) {
         if (!aiAnalysisRepository.existsById(id))
             return Optional.empty();
         AiAnalysis entity = aiAnalysisMapper.toEntity(dto);
@@ -51,7 +50,7 @@ public class AiAnalysisService {
         return Optional.of(aiAnalysisMapper.toDto(aiAnalysisRepository.save(entity)));
     }
 
-    public boolean deleteById(Integer id) {
+    public boolean deleteById(Long id) {
         if (!aiAnalysisRepository.existsById(id))
             return false;
         aiAnalysisRepository.deleteById(id);
