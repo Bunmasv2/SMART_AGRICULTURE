@@ -38,7 +38,7 @@ public class WeatherCheckService {
 
     // ===== Ngưỡng cảnh báo =====
     private static final int RAIN_PROBABILITY_THRESHOLD = 70; // %
-    private static final double HIGH_TEMP_THRESHOLD = 35.0; // °C
+    private static final double HIGH_TEMP_THRESHOLD = 30.0; // °C
     private static final double LOW_TEMP_THRESHOLD = 15.0; // °C
     private static final double STRONG_WIND_THRESHOLD = 40.0; // km/h
     private static final int HIGH_HUMIDITY_THRESHOLD = 90; // %
@@ -94,6 +94,10 @@ public class WeatherCheckService {
         }
 
         WeatherCurrentDto.Current w = weatherData.getCurrent();
+        
+        // --- Phát trực tiếp thông tin thời tiết Data gốc (chưa cảnh báo) qua WebSocket ---
+        messagingTemplate.convertAndSend("/topic/weather/" + pBatchId, weatherData);
+
         List<WeatherAlert> generatedAlerts = new ArrayList<>();
 
         log.info(
@@ -202,6 +206,11 @@ public class WeatherCheckService {
                     continue;
 
                 WeatherCurrentDto.Current w = weatherData.getCurrent();
+
+                // --- Phát trực tiếp Data gốc qua WebSocket cho tất cả các batch (giải pháp realtime) ---
+                for (PlantingBatch batch : batchesAtLocation) {
+                    messagingTemplate.convertAndSend("/topic/weather/" + batch.getPBatchId(), weatherData);
+                }
 
                 // Mảng lưu tạm các type và desc cảnh báo
                 List<String[]> tempAlerts = new ArrayList<>();
