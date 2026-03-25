@@ -12,6 +12,7 @@ import {
     EyeDropperIcon,
 } from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react';
+import { Client } from '@stomp/stompjs';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface WeatherCurrent {
@@ -115,6 +116,50 @@ export default function SmartFarmDashboard() {
         // Refresh mỗi 30 phút (khớp với scheduler backend)
         const interval = setInterval(fetchWeather, 30 * 60 * 1000);
         return () => clearInterval(interval);
+    }, []);
+
+    // WebSocket Connection
+    useEffect(() => {
+        const client = new Client({
+            brokerURL: 'ws://localhost:8080/ws',
+            reconnectDelay: 5000,
+            onConnect: () => {
+                console.log('🟢 Đã kết nối STOMP WebSocket!');
+                // Subscribe channel cảnh báo thời tiết
+                client.subscribe('/topic/weather-alerts', (message) => {
+                    if (message.body) {
+                        const newAlert: AlertDto = JSON.parse(message.body);
+                        console.log('🔔 Có cảnh báo thời tiết mới nhất:', newAlert);
+
+                        setDashData((prevData) => {
+                            if (!prevData) return prevData;
+
+                            // Kiểm tra xem Id alert này đã tồn tại chưa để tránh bị duplicate
+                            const isExisting = prevData.recentAlerts.some(a => a.alertId === newAlert.alertId);
+                            if (isExisting) return prevData;
+
+                            return {
+                                ...prevData,
+                                recentAlerts: [newAlert, ...prevData.recentAlerts].slice(0, 15) // Lưu trữ tối đa 15 cảnh báo mới
+                            };
+                        });
+                    }
+                });
+            },
+            onStompError: (frame) => {
+                console.error('❌ STOMP error', frame);
+            },
+            onWebSocketError: (event) => {
+                console.error('❌ WebSocket error', event);
+            }
+        });
+
+        client.activate();
+
+        return () => {
+            console.log('🔴 Ngắt kết nối STOMP Websocket...');
+            client.deactivate();
+        };
     }, []);
 
     const w = dashData?.weather?.current;
