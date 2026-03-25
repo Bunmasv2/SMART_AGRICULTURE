@@ -215,7 +215,7 @@ public class WeatherAlertController {
      * Response: { weather: WeatherCurrentDto, alerts: List<WeatherAlertDto>,
      * batchName, batchId }
      */
-    @GetMapping("/{pBatchId}")
+    @GetMapping("/dashboard/{pBatchId}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardWeatherByBatchId(
             @PathVariable Integer pBatchId) {
         try {

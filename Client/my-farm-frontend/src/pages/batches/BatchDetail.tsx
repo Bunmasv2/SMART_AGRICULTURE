@@ -12,6 +12,11 @@ import axios from 'axios';
 import type { GrowthProcessBase } from '../../models/GrowthProcess';
 import { useNavigate, useParams } from 'react-router-dom';
 import { STAGE_CONFIG } from '../../utils/IconUtils';
+import {
+    Sun, Cloud, CloudFog, CloudDrizzle, CloudRain,
+    Snowflake, CloudSnow, CloudLightning, HelpCircle
+} from 'lucide-react';
+import { WeatherModal } from '../../components/modals/WeatherModal';
 
 const BATCH_LOGS: BatchLog[] = [
     { log_id: 1, event_type: "STATUS_CHANGE", content: "Lô được khởi tạo, bắt đầu giai đoạn chuẩn bị đất.", created_at: "2025-12-15 08:00", created_by: "Nguyễn Văn Kiệt", image_url: null },
@@ -30,6 +35,41 @@ const STATUS_COLOR = {
     COMPLETED: '#94a3b8'
 };
 
+const getWeatherVisuals = (code: number | undefined) => {
+    if (code === undefined) return { Icon: HelpCircle, color: 'text-slate-400' };
+    if (code === 0) return { Icon: Sun, color: 'text-amber-500' };
+    if (code <= 3) return { Icon: Cloud, color: 'text-slate-400' };
+    if (code <= 9) return { Icon: CloudFog, color: 'text-slate-300' };
+    if (code <= 19) return { Icon: CloudDrizzle, color: 'text-blue-400' };
+    if (code <= 29) return { Icon: CloudRain, color: 'text-blue-500' };
+    if (code <= 39) return { Icon: Snowflake, color: 'text-sky-300' };
+    if (code <= 49) return { Icon: CloudFog, color: 'text-slate-400' };
+    if (code <= 59) return { Icon: CloudDrizzle, color: 'text-blue-400' };
+    if (code <= 69) return { Icon: CloudRain, color: 'text-blue-600' };
+    if (code <= 79) return { Icon: Snowflake, color: 'text-sky-400' };
+    if (code <= 84) return { Icon: CloudRain, color: 'text-blue-500' };
+    if (code <= 94) return { Icon: CloudSnow, color: 'text-sky-500' };
+    return { Icon: CloudLightning, color: 'text-yellow-600' };
+}
+
+function weatherCodeToText(code: number | undefined): string {
+    if (code === undefined) return 'Không xác định';
+    if (code === 0) return 'Trời quang';
+    if (code <= 3) return 'Nhiều mây';
+    if (code <= 9) return 'Sương mù nhẹ';
+    if (code <= 19) return 'Mưa phùn';
+    if (code <= 29) return 'Mưa rào';
+    if (code <= 39) return 'Tuyết';
+    if (code <= 49) return 'Sương mù';
+    if (code <= 59) return 'Mưa phùn';
+    if (code <= 69) return 'Mưa vừa đến to';
+    if (code <= 79) return 'Tuyết';
+    if (code <= 84) return 'Mưa rào';
+    if (code <= 94) return 'Tuyết rào';
+    return 'Giông bão';
+}
+
+
 export default function BatchDetail() {
     const [batch, setBatch] = useState<Batch | null>()
     const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>()
@@ -37,6 +77,8 @@ export default function BatchDetail() {
     const [tasks, setTasks] = useState<TaskDto[]>([]);
     const [activeTab, setActiveTab] = useState('workflow');
     const [expandedStage, setExpandedStage] = useState<number | null>(3);
+    const [showWeatherModal, setShowWeatherModal] = useState(false);
+    const [weather, setWeather] = useState()
     const { id } = useParams()
     const navigate = useNavigate()
 
@@ -51,6 +93,20 @@ export default function BatchDetail() {
         }
 
         fetchBatchDetail()
+    }, [id])
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                const reponse = await axios.get(`http://localhost:8080/api/weather-alerts/dashboard/${1}`)
+                console.log(reponse.data)
+                setWeather(reponse.data.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        if (id) fetchWeather()
     }, [id])
 
     useEffect(() => {
@@ -103,28 +159,47 @@ export default function BatchDetail() {
     const currentStage = getCurrentStage(currentDay, stages);
     const progressPct = Math.min(100, Math.round((currentDay / (stages[stages.length - 1].endDay)) * 100));
     const statusColor = STATUS_COLOR[batch.status as keyof typeof STATUS_COLOR] || '#94a3b8';
+    const { Icon: WeatherIcon, color: weatherColor } = getWeatherVisuals(1);
 
     return (
         <div key={id} className="min-h-screen bg-white font-['Be_Vietnam_Pro',_sans-serif] flex flex-col overflow-x-hidden">
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');`}</style>
+
             <div className="bg-white border-b border-slate-100 sticky top-0 z-20 shadow-sm w-full">
                 <div className="px-4 flex items-center gap-3 h-12">
+                    {/* Nút Back */}
                     <button onClick={() => navigate("/batches")} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 flex-shrink-0">
                         <ArrowLeftIcon className="h-5 w-5" />
                     </button>
 
+                    {/* Thông tin Batch */}
                     <div className="flex-1 min-w-0 flex items-center gap-2">
                         <h1 className="font-extrabold text-slate-900 text-base whitespace-nowrap">
                             {batch.batchName}
                         </h1>
-
                         <span className="text-slate-300 flex-shrink-0">|</span>
-
                         <p className="text-xs text-slate-500 truncate font-medium">
                             {batch.cropName} • {batch.variety}
                         </p>
+                        <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 animate-pulse`} style={{ backgroundColor: statusColor }} />
+                    </div>
 
-                        <div className={`h-3 w-3 rounded-full flex-shrink-0 animate-pulse`} style={{ backgroundColor: statusColor }} />
+                    {/* PHẦN MỚI: Icon thời tiết ở góc phải */}
+                    <div
+                        onClick={() => setShowWeatherModal(true)}
+                        className="flex items-center gap-2 pl-3 border-l border-slate-100 ml-auto flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors h-full px-2"
+                    >
+                        {weather &&
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-none">Chi tiết</p>
+                                <p className="text-[11px] font-bold text-slate-600 leading-tight">
+                                    {weather.weather.current.temperature_2m}°C
+                                </p>
+                            </div>
+                        }
+                        <div className={`p-1.5 rounded-md bg-slate-50 ${weatherColor}`}>
+                            <WeatherIcon className="h-5 w-5" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -222,6 +297,16 @@ export default function BatchDetail() {
                     )}
                 </div>
             </div>
+
+            {weather &&
+
+                <WeatherModal
+                    isOpen={showWeatherModal}
+                    onClose={() => setShowWeatherModal(false)}
+                    weatherData={weather.weather}
+                    batchName={weather.batchName}
+                />
+            }
         </div>
     );
 }
