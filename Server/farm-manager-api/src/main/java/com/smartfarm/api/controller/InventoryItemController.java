@@ -1,6 +1,7 @@
 package com.smartfarm.api.controller;
 
 import com.smartfarm.api.dto.ApiResponse;
+import com.smartfarm.api.dto.CreateFertilizerRequest;
 import com.smartfarm.api.dto.InventoryItemDto;
 import com.smartfarm.api.service.InventoryItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/inventory-items")
@@ -16,6 +20,35 @@ import java.util.List;
 public class InventoryItemController {
 
     private final InventoryItemService inventoryItemService;
+
+    @GetMapping("/fertilizers")
+    public List<Map<String, Object>> getAll() {
+        return inventoryItemService.getAllFertilizers();
+    }
+
+    @GetMapping("/pesticides")
+    public List<Map<String, Object>> getAllPesticide() {
+        return inventoryItemService.getAllPesticides();
+    }
+
+    @PostMapping("/add")
+    public String create(@RequestBody CreateFertilizerRequest request) {
+        inventoryItemService.createFertilizer(request);
+        return "success";
+    }
+
+    @PutMapping("/batches/{id}")
+    public ResponseEntity<?> update(@PathVariable Integer id,
+            @RequestBody CreateFertilizerRequest req) {
+        inventoryItemService.updateFertilizer(id, req);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/batches/{id}")
+    public ResponseEntity<?> deleteItem(@PathVariable Integer id) {
+        inventoryItemService.deleteFertilizer(id);
+        return ResponseEntity.ok().build();
+    }
 
     @Autowired
     public InventoryItemController(InventoryItemService inventoryItemService) {
@@ -56,7 +89,8 @@ public class InventoryItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryItemDto>> update(@PathVariable Integer id, @RequestBody InventoryItemDto dto) {
+    public ResponseEntity<ApiResponse<InventoryItemDto>> update(@PathVariable Integer id,
+            @RequestBody InventoryItemDto dto) {
         try {
             return inventoryItemService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "InventoryItem updated successfully")))

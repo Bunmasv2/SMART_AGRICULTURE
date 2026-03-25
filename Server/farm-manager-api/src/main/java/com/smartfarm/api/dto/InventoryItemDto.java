@@ -14,4 +14,5 @@ public class InventoryItemDto {
     private Double minThreshold;
     private Integer cropId;
     private String cropName;
+    private String supplier;
 }

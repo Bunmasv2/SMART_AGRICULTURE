@@ -86,11 +86,13 @@ public class InventoryBatchService {
     }
 
     public List<InventoryBatchDto> findAll() {
-        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public List<InventoryBatchDto> findByItemId(Integer itemId) {
-        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public List<InventoryBatchDto> findByCategory(String category) {
@@ -146,7 +148,8 @@ public class InventoryBatchService {
     }
 
     public boolean deleteById(Integer id) {
-        if (!inventoryBatchRepository.existsById(id)) return false;
+        if (!inventoryBatchRepository.existsById(id))
+            return false;
         inventoryBatchRepository.deleteById(id);
         return true;
     }

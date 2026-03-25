@@ -15,6 +15,8 @@ const Settings = lazy(() => import('../pages/settings/Settings'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
+const FertilizerManagement = lazy(() => import('../pages/inventory/FertilizerManagement'));
+const PesticideManagement = lazy(() => import('../pages/inventory/PesticideManagement'));
 
 const AppRoutes = () => {
     return (
@@ -33,6 +35,8 @@ const AppRoutes = () => {
                         <Route path="/processes" element={<Processes />} />
 
                         <Route path="/inventory" element={<Inventory />} />
+                        <Route path="/fertilizers" element={<FertilizerManagement />} />
+                        <Route path="/pesticides" element={<PesticideManagement />} />
 
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/calendar" element={<Calendar />} />
