@@ -21,6 +21,7 @@ public class InventoryBatchMapper {
         if (entity.getItem() != null) {
             dto.setItemId(entity.getItem().getItemId());
             dto.setItemName(entity.getItem().getItemName());
+            dto.setMinThreshold(entity.getItem().getMinThreshold());
         }
         return dto;
     }
