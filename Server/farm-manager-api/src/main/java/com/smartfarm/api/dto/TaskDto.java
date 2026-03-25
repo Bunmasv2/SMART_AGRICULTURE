@@ -8,20 +8,20 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskDto {
-    private Long taskId;
-    private Long pBatchId;
+    private Integer taskId;
+    private Integer pBatchId;
     private String batchName;
-    
+
     // Thêm thông tin Stage
-    private Long stageId;
+    private Integer stageId;
     private String stageName;
-    
-    private Long taskTmpId;
+
+    private Integer taskTmpId;
     private String taskTemplateName;
     private String title;
     private LocalDate plannedDate;
     private LocalDate actualDate;
-    private Long assignedToId;
+    private Integer assignedToId;
     private String assignedToName;
     private String status;
     private String notes;

@@ -24,7 +24,7 @@ public class InventoryBatchController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InventoryBatchDto>>> getAll(
-            @RequestParam(required = false) Long itemId) {
+            @RequestParam(required = false) Integer itemId) {
         try {
             List<InventoryBatchDto> data = (itemId != null)
                     ? inventoryBatchService.findByItemId(itemId)
@@ -37,7 +37,7 @@ public class InventoryBatchController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryBatchDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<InventoryBatchDto>> getById(@PathVariable Integer id) {
         return inventoryBatchService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -48,7 +48,8 @@ public class InventoryBatchController {
     public ResponseEntity<ApiResponse<InventoryBatchDto>> create(@RequestBody InventoryBatchDto dto) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(inventoryBatchService.create(dto), "InventoryBatch created successfully"));
+                    .body(ApiResponse.success(inventoryBatchService.create(dto),
+                            "InventoryBatch created successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));
@@ -56,7 +57,8 @@ public class InventoryBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryBatchDto>> update(@PathVariable Long id, @RequestBody InventoryBatchDto dto) {
+    public ResponseEntity<ApiResponse<InventoryBatchDto>> update(@PathVariable Integer id,
+            @RequestBody InventoryBatchDto dto) {
         try {
             return inventoryBatchService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "InventoryBatch updated successfully")))
@@ -69,7 +71,7 @@ public class InventoryBatchController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (inventoryBatchService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "InventoryBatch deleted successfully"));

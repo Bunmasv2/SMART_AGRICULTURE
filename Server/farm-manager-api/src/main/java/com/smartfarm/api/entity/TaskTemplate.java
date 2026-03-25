@@ -15,7 +15,7 @@ public class TaskTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_tmp_id")
-    private Long taskTmpId;
+    private Integer taskTmpId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")

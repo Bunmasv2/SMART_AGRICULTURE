@@ -29,11 +29,12 @@ public class TaskTemplateService {
         return taskTemplateRepository.findAll().stream().map(taskTemplateMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<TaskTemplateDto> findByStageId(Long stageId) {
-        return taskTemplateRepository.findByStageStageId(stageId).stream().map(taskTemplateMapper::toDto).collect(Collectors.toList());
+    public List<TaskTemplateDto> findByStageId(Integer stageId) {
+        return taskTemplateRepository.findByStageStageId(stageId).stream().map(taskTemplateMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<TaskTemplateDto> findById(Long id) {
+    public Optional<TaskTemplateDto> findById(Integer id) {
         return taskTemplateRepository.findById(id).map(taskTemplateMapper::toDto);
     }
 
@@ -42,15 +43,17 @@ public class TaskTemplateService {
         return taskTemplateMapper.toDto(taskTemplateRepository.save(entity));
     }
 
-    public Optional<TaskTemplateDto> update(Long id, TaskTemplateDto dto) {
-        if (!taskTemplateRepository.existsById(id)) return Optional.empty();
+    public Optional<TaskTemplateDto> update(Integer id, TaskTemplateDto dto) {
+        if (!taskTemplateRepository.existsById(id))
+            return Optional.empty();
         TaskTemplate entity = taskTemplateMapper.toEntity(dto);
         entity.setTaskTmpId(id);
         return Optional.of(taskTemplateMapper.toDto(taskTemplateRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
-        if (!taskTemplateRepository.existsById(id)) return false;
+    public boolean deleteById(Integer id) {
+        if (!taskTemplateRepository.existsById(id))
+            return false;
         taskTemplateRepository.deleteById(id);
         return true;
     }

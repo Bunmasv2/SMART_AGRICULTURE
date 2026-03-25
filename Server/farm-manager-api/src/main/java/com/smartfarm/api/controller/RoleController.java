@@ -33,7 +33,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RoleDto>> getById(@PathVariable Integer id) {
         return roleService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -52,7 +52,7 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleDto>> update(@PathVariable Long id, @RequestBody RoleDto dto) {
+    public ResponseEntity<ApiResponse<RoleDto>> update(@PathVariable Integer id, @RequestBody RoleDto dto) {
         try {
             return roleService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Role updated successfully")))
@@ -65,7 +65,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (roleService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "Role deleted successfully"));

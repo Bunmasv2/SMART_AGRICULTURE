@@ -20,7 +20,8 @@ public class InventoryItemService {
     private final InventoryItemMapper inventoryItemMapper;
 
     @Autowired
-    public InventoryItemService(InventoryItemRepository inventoryItemRepository, InventoryItemMapper inventoryItemMapper) {
+    public InventoryItemService(InventoryItemRepository inventoryItemRepository,
+            InventoryItemMapper inventoryItemMapper) {
         this.inventoryItemRepository = inventoryItemRepository;
         this.inventoryItemMapper = inventoryItemMapper;
     }
@@ -30,10 +31,11 @@ public class InventoryItemService {
     }
 
     public List<InventoryItemDto> findByCategory(String category) {
-        return inventoryItemRepository.findByCategory(category).stream().map(inventoryItemMapper::toDto).collect(Collectors.toList());
+        return inventoryItemRepository.findByCategory(category).stream().map(inventoryItemMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<InventoryItemDto> findById(Long id) {
+    public Optional<InventoryItemDto> findById(Integer id) {
         return inventoryItemRepository.findById(id).map(inventoryItemMapper::toDto);
     }
 
@@ -42,15 +44,17 @@ public class InventoryItemService {
         return inventoryItemMapper.toDto(inventoryItemRepository.save(entity));
     }
 
-    public Optional<InventoryItemDto> update(Long id, InventoryItemDto dto) {
-        if (!inventoryItemRepository.existsById(id)) return Optional.empty();
+    public Optional<InventoryItemDto> update(Integer id, InventoryItemDto dto) {
+        if (!inventoryItemRepository.existsById(id))
+            return Optional.empty();
         InventoryItem entity = inventoryItemMapper.toEntity(dto);
         entity.setItemId(id);
         return Optional.of(inventoryItemMapper.toDto(inventoryItemRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
-        if (!inventoryItemRepository.existsById(id)) return false;
+    public boolean deleteById(Integer id) {
+        if (!inventoryItemRepository.existsById(id))
+            return false;
         inventoryItemRepository.deleteById(id);
         return true;
     }

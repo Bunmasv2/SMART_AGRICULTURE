@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface WeatherAlertRepository extends JpaRepository<WeatherAlert, Long> {
-    List<WeatherAlert> findByPlantingBatchPBatchId(Long pBatchId);
+public interface WeatherAlertRepository extends JpaRepository<WeatherAlert, Integer> {
+    List<WeatherAlert> findByPlantingBatchPBatchId(Integer pBatchId);
 }

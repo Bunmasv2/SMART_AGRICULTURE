@@ -37,7 +37,7 @@ public class InventoryItemController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryItemDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<InventoryItemDto>> getById(@PathVariable Integer id) {
         return inventoryItemService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,8 @@ public class InventoryItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryItemDto>> update(@PathVariable Long id, @RequestBody InventoryItemDto dto) {
+    public ResponseEntity<ApiResponse<InventoryItemDto>> update(@PathVariable Integer id,
+            @RequestBody InventoryItemDto dto) {
         try {
             return inventoryItemService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "InventoryItem updated successfully")))
@@ -69,7 +70,7 @@ public class InventoryItemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (inventoryItemService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "InventoryItem deleted successfully"));

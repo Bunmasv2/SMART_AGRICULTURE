@@ -30,7 +30,7 @@ public class TaskService {
         return taskRepository.findAll().stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<TaskDto> findByBatchId(Long batchId) {
+    public List<TaskDto> findByBatchId(Integer batchId) {
         // Gọi method có JOIN FETCH để lấy kèm Stage thông qua TaskTemplate
         List<Task> tasks = taskRepository.findTasksWithStageByBatchId(batchId);
 
@@ -39,7 +39,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDto> findByAssignedUser(Long userId) {
+    public List<TaskDto> findByAssignedUser(Integer userId) {
         return taskRepository.findByAssignedToUserId(userId).stream().map(taskMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -48,7 +48,7 @@ public class TaskService {
         return taskRepository.findByStatus(status).stream().map(taskMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<TaskDto> findById(Long id) {
+    public Optional<TaskDto> findById(Integer id) {
         return taskRepository.findById(id).map(taskMapper::toDto);
     }
 
@@ -57,7 +57,7 @@ public class TaskService {
         return taskMapper.toDto(taskRepository.save(entity));
     }
 
-    public Optional<TaskDto> update(Long id, TaskDto dto) {
+    public Optional<TaskDto> update(Integer id, TaskDto dto) {
         if (!taskRepository.existsById(id))
             return Optional.empty();
         Task entity = taskMapper.toEntity(dto);
@@ -65,7 +65,7 @@ public class TaskService {
         return Optional.of(taskMapper.toDto(taskRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!taskRepository.existsById(id))
             return false;
         taskRepository.deleteById(id);
@@ -73,7 +73,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Optional<TaskDto> updateStatus(Long id, String status) {
+    public Optional<TaskDto> updateStatus(Integer id, String status) {
         return taskRepository.findById(id).map(task -> {
             // 1. Cập nhật trạng thái mới
             task.setStatus(status);

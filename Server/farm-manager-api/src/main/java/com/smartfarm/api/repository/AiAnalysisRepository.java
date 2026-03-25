@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
-    List<AiAnalysis> findByPlantingBatchPBatchId(Long pBatchId);
+public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Integer> {
+    List<AiAnalysis> findByPlantingBatchPBatchId(Integer pBatchId);
 }

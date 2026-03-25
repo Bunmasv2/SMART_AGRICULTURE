@@ -24,7 +24,7 @@ public class AiAnalysisController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<AiAnalysisDto>>> getAll(
-            @RequestParam(required = false) Long pBatchId) {
+            @RequestParam(required = false) Integer pBatchId) {
         try {
             List<AiAnalysisDto> data = (pBatchId != null)
                     ? aiAnalysisService.findByBatchId(pBatchId)
@@ -37,7 +37,7 @@ public class AiAnalysisController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Integer id) {
         return aiAnalysisService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,8 @@ public class AiAnalysisController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Long id, @RequestBody AiAnalysisDto dto) {
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Integer id,
+            @RequestBody AiAnalysisDto dto) {
         try {
             return aiAnalysisService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "AiAnalysis updated successfully")))
@@ -69,7 +70,7 @@ public class AiAnalysisController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (aiAnalysisService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "AiAnalysis deleted successfully"));

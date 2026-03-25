@@ -20,20 +20,23 @@ public class InventoryBatchService {
     private final InventoryBatchMapper inventoryBatchMapper;
 
     @Autowired
-    public InventoryBatchService(InventoryBatchRepository inventoryBatchRepository, InventoryBatchMapper inventoryBatchMapper) {
+    public InventoryBatchService(InventoryBatchRepository inventoryBatchRepository,
+            InventoryBatchMapper inventoryBatchMapper) {
         this.inventoryBatchRepository = inventoryBatchRepository;
         this.inventoryBatchMapper = inventoryBatchMapper;
     }
 
     public List<InventoryBatchDto> findAll() {
-        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+        return inventoryBatchRepository.findAll().stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<InventoryBatchDto> findByItemId(Long itemId) {
-        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto).collect(Collectors.toList());
+    public List<InventoryBatchDto> findByItemId(Integer itemId) {
+        return inventoryBatchRepository.findByItemItemId(itemId).stream().map(inventoryBatchMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<InventoryBatchDto> findById(Long id) {
+    public Optional<InventoryBatchDto> findById(Integer id) {
         return inventoryBatchRepository.findById(id).map(inventoryBatchMapper::toDto);
     }
 
@@ -42,15 +45,17 @@ public class InventoryBatchService {
         return inventoryBatchMapper.toDto(inventoryBatchRepository.save(entity));
     }
 
-    public Optional<InventoryBatchDto> update(Long id, InventoryBatchDto dto) {
-        if (!inventoryBatchRepository.existsById(id)) return Optional.empty();
+    public Optional<InventoryBatchDto> update(Integer id, InventoryBatchDto dto) {
+        if (!inventoryBatchRepository.existsById(id))
+            return Optional.empty();
         InventoryBatch entity = inventoryBatchMapper.toEntity(dto);
         entity.setBatchInvId(id);
         return Optional.of(inventoryBatchMapper.toDto(inventoryBatchRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
-        if (!inventoryBatchRepository.existsById(id)) return false;
+    public boolean deleteById(Integer id) {
+        if (!inventoryBatchRepository.existsById(id))
+            return false;
         inventoryBatchRepository.deleteById(id);
         return true;
     }

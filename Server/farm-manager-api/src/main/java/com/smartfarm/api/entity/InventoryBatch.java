@@ -17,7 +17,7 @@ public class InventoryBatch {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "batch_inv_id")
-    private Long batchInvId;
+    private Integer batchInvId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")

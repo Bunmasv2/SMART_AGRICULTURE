@@ -16,7 +16,7 @@ public class PlantingBatch {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_batch_id")
-    private Long pBatchId;
+    private Integer pBatchId;
 
     @Column(name = "batch_name", nullable = false, length = 100)
     private String batchName;

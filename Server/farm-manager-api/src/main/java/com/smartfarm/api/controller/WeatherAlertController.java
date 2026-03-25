@@ -24,7 +24,7 @@ public class WeatherAlertController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<WeatherAlertDto>>> getAll(
-            @RequestParam(required = false) Long pBatchId) {
+            @RequestParam(required = false) Integer pBatchId) {
         try {
             List<WeatherAlertDto> data = (pBatchId != null)
                     ? weatherAlertService.findByBatchId(pBatchId)
@@ -37,7 +37,7 @@ public class WeatherAlertController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<WeatherAlertDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<WeatherAlertDto>> getById(@PathVariable Integer id) {
         return weatherAlertService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,8 @@ public class WeatherAlertController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<WeatherAlertDto>> update(@PathVariable Long id, @RequestBody WeatherAlertDto dto) {
+    public ResponseEntity<ApiResponse<WeatherAlertDto>> update(@PathVariable Integer id,
+            @RequestBody WeatherAlertDto dto) {
         try {
             return weatherAlertService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "WeatherAlert updated successfully")))
@@ -69,7 +70,7 @@ public class WeatherAlertController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (weatherAlertService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "WeatherAlert deleted successfully"));

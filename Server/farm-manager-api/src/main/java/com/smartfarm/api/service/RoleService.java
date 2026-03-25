@@ -29,7 +29,7 @@ public class RoleService {
         return roleRepository.findAll().stream().map(roleMapper::toDto).collect(Collectors.toList());
     }
 
-    public Optional<RoleDto> findById(Long id) {
+    public Optional<RoleDto> findById(Integer id) {
         return roleRepository.findById(id).map(roleMapper::toDto);
     }
 
@@ -38,15 +38,17 @@ public class RoleService {
         return roleMapper.toDto(roleRepository.save(entity));
     }
 
-    public Optional<RoleDto> update(Long id, RoleDto dto) {
-        if (!roleRepository.existsById(id)) return Optional.empty();
+    public Optional<RoleDto> update(Integer id, RoleDto dto) {
+        if (!roleRepository.existsById(id))
+            return Optional.empty();
         Role entity = roleMapper.toEntity(dto);
         entity.setRoleId(id);
         return Optional.of(roleMapper.toDto(roleRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
-        if (!roleRepository.existsById(id)) return false;
+    public boolean deleteById(Integer id) {
+        if (!roleRepository.existsById(id))
+            return false;
         roleRepository.deleteById(id);
         return true;
     }

@@ -24,7 +24,7 @@ public class TaskTemplateController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<TaskTemplateDto>>> getAll(
-            @RequestParam(required = false) Long stageId) {
+            @RequestParam(required = false) Integer stageId) {
         try {
             List<TaskTemplateDto> data = (stageId != null)
                     ? taskTemplateService.findByStageId(stageId)
@@ -37,7 +37,7 @@ public class TaskTemplateController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskTemplateDto>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TaskTemplateDto>> getById(@PathVariable Integer id) {
         return taskTemplateService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -56,7 +56,8 @@ public class TaskTemplateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskTemplateDto>> update(@PathVariable Long id, @RequestBody TaskTemplateDto dto) {
+    public ResponseEntity<ApiResponse<TaskTemplateDto>> update(@PathVariable Integer id,
+            @RequestBody TaskTemplateDto dto) {
         try {
             return taskTemplateService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "TaskTemplate updated successfully")))
@@ -69,7 +70,7 @@ public class TaskTemplateController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         try {
             if (taskTemplateService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "TaskTemplate deleted successfully"));

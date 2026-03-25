@@ -9,10 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GrowthProcessDetailDto {
-    private Long processId;
+    private Integer processId;
     private String processName;
     private Integer totalDays;
-    private Long cropId;
+    private Integer cropId;
     private String cropName;
     private String variety;
 
@@ -23,13 +23,13 @@ public class GrowthProcessDetailDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StageDto {
-        private Long stageId;
+        private Integer stageId;
         private String stageName;
         private Integer startDay;
         private Integer endDay;
-        
+
         // Bổ sung danh sách công việc mẫu của từng giai đoạn
-        private List<TaskTemplateDto> taskTemplates; 
+        private List<TaskTemplateDto> taskTemplates;
     }
 
     @Data
@@ -37,7 +37,7 @@ public class GrowthProcessDetailDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TaskTemplateDto {
-        private Long taskTmpId;
+        private Integer taskTmpId;
         private String taskName;
         private Integer offsetDay;
         private Double quantityRequired;

@@ -29,11 +29,12 @@ public class WeatherAlertService {
         return weatherAlertRepository.findAll().stream().map(weatherAlertMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<WeatherAlertDto> findByBatchId(Long pBatchId) {
-        return weatherAlertRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(weatherAlertMapper::toDto).collect(Collectors.toList());
+    public List<WeatherAlertDto> findByBatchId(Integer pBatchId) {
+        return weatherAlertRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(weatherAlertMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<WeatherAlertDto> findById(Long id) {
+    public Optional<WeatherAlertDto> findById(Integer id) {
         return weatherAlertRepository.findById(id).map(weatherAlertMapper::toDto);
     }
 
@@ -42,15 +43,17 @@ public class WeatherAlertService {
         return weatherAlertMapper.toDto(weatherAlertRepository.save(entity));
     }
 
-    public Optional<WeatherAlertDto> update(Long id, WeatherAlertDto dto) {
-        if (!weatherAlertRepository.existsById(id)) return Optional.empty();
+    public Optional<WeatherAlertDto> update(Integer id, WeatherAlertDto dto) {
+        if (!weatherAlertRepository.existsById(id))
+            return Optional.empty();
         WeatherAlert entity = weatherAlertMapper.toEntity(dto);
         entity.setAlertId(id);
         return Optional.of(weatherAlertMapper.toDto(weatherAlertRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
-        if (!weatherAlertRepository.existsById(id)) return false;
+    public boolean deleteById(Integer id) {
+        if (!weatherAlertRepository.existsById(id))
+            return false;
         weatherAlertRepository.deleteById(id);
         return true;
     }

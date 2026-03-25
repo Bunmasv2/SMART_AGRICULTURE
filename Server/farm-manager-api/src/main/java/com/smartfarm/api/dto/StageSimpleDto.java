@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StageSimpleDto {
-    private Long stageId;
+    private Integer stageId;
     private String stageName;
     private Integer startDay;
     private Integer endDay;

@@ -30,17 +30,17 @@ public class StageService {
         return stageRepository.findAll().stream().map(stageMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<StageDto> findByProcessId(Long processId) {
+    public List<StageDto> findByProcessId(Integer processId) {
         return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<StageSimpleDto> findSimpleByProcessId(Long processId) {
+    public List<StageSimpleDto> findSimpleByProcessId(Integer processId) {
         return stageRepository.findByProcessProcessId(processId).stream().map(stageMapper::toSimpleDto)
                 .collect(Collectors.toList());
     }
 
-    public Optional<StageDto> findById(Long id) {
+    public Optional<StageDto> findById(Integer id) {
         return stageRepository.findById(id).map(stageMapper::toDto);
     }
 
@@ -49,7 +49,7 @@ public class StageService {
         return stageMapper.toDto(stageRepository.save(entity));
     }
 
-    public Optional<StageDto> update(Long id, StageDto dto) {
+    public Optional<StageDto> update(Integer id, StageDto dto) {
         if (!stageRepository.existsById(id))
             return Optional.empty();
         Stage entity = stageMapper.toEntity(dto);
@@ -57,7 +57,7 @@ public class StageService {
         return Optional.of(stageMapper.toDto(stageRepository.save(entity)));
     }
 
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Integer id) {
         if (!stageRepository.existsById(id))
             return false;
         stageRepository.deleteById(id);

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CropDto {
-    private Long cropId;
+    private Integer cropId;
     private String cropName;
     private String variety;
     private String description;
