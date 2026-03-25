@@ -30,6 +30,7 @@ public class TaskTemplateService {
     }
 
     public List<TaskTemplateDto> findByStageId(Integer stageId) {
+
         return taskTemplateRepository.findByStageStageId(stageId).stream().map(taskTemplateMapper::toDto).collect(Collectors.toList());
     }
 
@@ -43,6 +44,7 @@ public class TaskTemplateService {
     }
 
     public Optional<TaskTemplateDto> update(Integer id, TaskTemplateDto dto) {
+
         if (!taskTemplateRepository.existsById(id)) return Optional.empty();
         TaskTemplate entity = taskTemplateMapper.toEntity(dto);
         entity.setTaskTmpId(id);

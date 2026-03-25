@@ -56,7 +56,8 @@ public class TaskTemplateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskTemplateDto>> update(@PathVariable Integer id, @RequestBody TaskTemplateDto dto) {
+    public ResponseEntity<ApiResponse<TaskTemplateDto>> update(@PathVariable Integer id,
+            @RequestBody TaskTemplateDto dto) {
         try {
             return taskTemplateService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "TaskTemplate updated successfully")))

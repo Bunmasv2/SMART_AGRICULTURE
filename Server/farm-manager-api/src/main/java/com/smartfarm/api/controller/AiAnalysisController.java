@@ -51,7 +51,7 @@ public class AiAnalysisController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> getById(@PathVariable Long id) {
         return aiAnalysisService.findById(id)
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -70,7 +70,7 @@ public class AiAnalysisController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Integer id, @RequestBody AiAnalysisDto dto) {
+    public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Long id, @RequestBody AiAnalysisDto dto) {
         try {
             return aiAnalysisService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "AiAnalysis updated successfully")))
@@ -83,7 +83,7 @@ public class AiAnalysisController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         try {
             if (aiAnalysisService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "AiAnalysis deleted successfully"));
@@ -100,16 +100,16 @@ public class AiAnalysisController {
      * Phân tích ảnh lá cây chanh bằng AI
      * POST /api/ai-analyses/analyze
      *
-     * @param pBatchId - ID của lô trồng
+     * @param pBatchId  - ID của lô trồng
      * @param imageFile - File ảnh lá cây
      * @return AiAnalysisResponseDTO với kết quả phân tích
      *
-     * HTTP Status Codes:
-     * - 200 OK: Phân tích thành công
-     * - 400 BAD REQUEST: File rỗng hoặc không hợp lệ
-     * - 404 NOT FOUND: Không tìm thấy PlantingBatch
-     * - 503 SERVICE UNAVAILABLE: AI service lỗi
-     * - 500 INTERNAL SERVER ERROR: Lỗi không xác định
+     *         HTTP Status Codes:
+     *         - 200 OK: Phân tích thành công
+     *         - 400 BAD REQUEST: File rỗng hoặc không hợp lệ
+     *         - 404 NOT FOUND: Không tìm thấy PlantingBatch
+     *         - 503 SERVICE UNAVAILABLE: AI service lỗi
+     *         - 500 INTERNAL SERVER ERROR: Lỗi không xác định
      */
     @PostMapping("/analyze")
     public ResponseEntity<ApiResponse<AiAnalysisResponseDTO>> analyzeLeafImage(

@@ -1,14 +1,28 @@
 package com.smartfarm.api.mapper;
 
 import com.smartfarm.api.dto.StageDto;
+import com.smartfarm.api.dto.StageSimpleDto;
 import com.smartfarm.api.entity.GrowthProcess;
 import com.smartfarm.api.entity.Stage;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StageMapper {
+    public StageSimpleDto toSimpleDto(Stage entity) {
+        if (entity == null)
+            return null;
+
+        return StageSimpleDto.builder()
+                .stageId(entity.getStageId())
+                .stageName(entity.getStageName())
+                .startDay(entity.getStartDay())
+                .endDay(entity.getEndDay())
+                .build();
+    }
+
     public StageDto toDto(Stage entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         StageDto dto = StageDto.builder()
                 .stageId(entity.getStageId())
                 .stageName(entity.getStageName())
@@ -23,7 +37,8 @@ public class StageMapper {
     }
 
     public Stage toEntity(StageDto dto) {
-        if (dto == null) return null;
+        if (dto == null)
+            return null;
         Stage entity = Stage.builder()
                 .stageId(dto.getStageId())
                 .stageName(dto.getStageName())

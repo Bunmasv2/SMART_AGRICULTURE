@@ -39,14 +39,16 @@ public class UserService {
     }
 
     public Optional<UserDto> update(Integer id, UserDto dto) {
-        if (!userRepository.existsById(id)) return Optional.empty();
+        if (!userRepository.existsById(id))
+            return Optional.empty();
         User entity = userMapper.toEntity(dto);
         entity.setUserId(id);
         return Optional.of(userMapper.toDto(userRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!userRepository.existsById(id)) return false;
+        if (!userRepository.existsById(id))
+            return false;
         userRepository.deleteById(id);
         return true;
     }

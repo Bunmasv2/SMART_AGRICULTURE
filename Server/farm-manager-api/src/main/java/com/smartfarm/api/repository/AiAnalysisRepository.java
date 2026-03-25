@@ -1,5 +1,9 @@
 package com.smartfarm.api.repository;
 
+import com.smartfarm.api.entity.AiAnalysis;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,9 +15,10 @@ import org.springframework.stereotype.Repository;
 import com.smartfarm.api.entity.AiAnalysis;
 
 @Repository
-public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Integer> {
+public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Long> {
     /**
-     * Tìm tất cả AiAnalysis theo pBatchId, sắp xếp theo ngày tạo giảm dần (mới nhất trước)
+     * Tìm tất cả AiAnalysis theo pBatchId, sắp xếp theo ngày tạo giảm dần (mới nhất
+     * trước)
      */
     @Query("SELECT a FROM AiAnalysis a WHERE a.plantingBatch.pBatchId = :pBatchId ORDER BY a.createdAt DESC")
     List<AiAnalysis> findByPlantingBatchPBatchId(@Param("pBatchId") Integer pBatchId);

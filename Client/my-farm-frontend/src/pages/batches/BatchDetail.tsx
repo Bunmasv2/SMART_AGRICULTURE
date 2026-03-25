@@ -1,111 +1,23 @@
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import {
     ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import StageProgressBar from '../../components/bar/StageProgressBar';
 import LogCard from '../../components/cards/LogCard';
 import WorkflowStageCard from '../../components/cards/WorkflowStageCard';
-import { getCurrentStage, getDaysSinceStart, getTotalDays } from '../../utils/DataUitls';
+import { formatDate, getCurrentStage, getDaysSinceStart, getExpectedDate } from '../../utils/DataUitls';
 import type { Batch, BatchLog } from '../../models/Batch';
-import type { WorkflowStage } from '../../models/Task';
-
-const MOCK_BATCH: Batch = {
-    p_batch_id: 2,
-    batch_name: "Lô C2-2026",
-    crop_name: "Chanh Bông Tím",
-    variety: "Giống địa phương",
-    area_m2: 350,
-    start_date: "2025-12-15",
-    expected_harvest: "2026-06-15",
-    status: "WARNING",
-    farmer: "Nguyễn Văn Kiệt",
-    location: "Ấp 3, Xã Tân Hưng, Cái Bè, Tiền Giang",
-    notes: "Lô trồng thử nghiệm giống địa phương, cần theo dõi sát sâu vẽ bùa.",
-};
-
-const WORKFLOW_STAGES: WorkflowStage[] = [
-    {
-        stage_id: 1,
-        name: "Chuẩn bị & Trồng",
-        icon: "🌱",
-        color: "#10b981",
-        day_start: 0,
-        day_end: 14,
-        status: "COMPLETED",
-        details: [
-            { day: 0, task: "Làm đất, bón lót phân hữu cơ (20kg/100m²)", done: true },
-            { day: 1, task: "Đào hố, cách nhau 2m×3m", done: true },
-            { day: 2, task: "Trồng cây con, tưới nước định vị", done: true },
-            { day: 7, task: "Kiểm tra tỷ lệ cây sống, dặm bổ sung", done: true },
-            { day: 14, task: "Bón phân NPK 16-16-8 lần 1 (5kg/100m²)", done: true },
-        ]
-    },
-    {
-        stage_id: 2,
-        name: "Sinh trưởng Thân Lá",
-        icon: "🍃",
-        color: "#3b82f6",
-        day_start: 15,
-        day_end: 60,
-        status: "COMPLETED",
-        details: [
-            { day: 15, task: "Phun thuốc phòng ngừa sâu vẽ bùa lần 1", done: true },
-            { day: 21, task: "Tỉa cành tạo tán, định hình bộ khung", done: true },
-            { day: 30, task: "Bón thúc lần 2, tưới phân bón lá", done: true },
-            { day: 45, task: "Kiểm tra rễ, phòng ngừa nấm Phytophthora", done: true },
-            { day: 60, task: "Đánh giá sinh trưởng, chuẩn bị kích thích ra hoa", done: true },
-        ]
-    },
-    {
-        stage_id: 3,
-        name: "Kích Thích Ra Hoa",
-        icon: "🌸",
-        color: "#f59e0b",
-        day_start: 61,
-        day_end: 90,
-        status: "IN_PROGRESS",
-        details: [
-            { day: 61, task: "Xiết nước 7-10 ngày để kích thích ra hoa", done: true },
-            { day: 68, task: "Phun KNO3 (0.5%) kết hợp Ethephon", done: true },
-            { day: 72, task: "Bắt đầu tưới trở lại, bón lân cao (P2O5)", done: true },
-            { day: 80, task: "⚠️ AI phát hiện sâu vẽ bùa mật độ cao - cần xử lý", done: false, alert: true },
-            { day: 85, task: "Phun Abamectin 1.8EC xử lý sâu vẽ bùa", done: false },
-            { day: 90, task: "Đánh giá kết quả ra hoa, chụp ảnh báo cáo", done: false },
-        ]
-    },
-    {
-        stage_id: 4,
-        name: "Đậu Trái & Nuôi Trái",
-        icon: "🍋",
-        color: "#8b5cf6",
-        day_start: 91,
-        day_end: 150,
-        status: "UPCOMING",
-        details: [
-            { day: 91, task: "Bón phân Kali cao để tăng đậu trái", done: false },
-            { day: 100, task: "Tỉa trái lần 1, để 3-4 trái/cành", done: false },
-            { day: 120, task: "Phòng ngừa bệnh loét do vi khuẩn Xanthomonas", done: false },
-            { day: 135, task: "Bón Canxi-Bo để tránh nứt trái", done: false },
-            { day: 150, task: "Đánh giá chất lượng trái, dự báo sản lượng", done: false },
-        ]
-    },
-    {
-        stage_id: 5,
-        name: "Thu Hoạch",
-        icon: "🧺",
-        color: "#ec4899",
-        day_start: 151,
-        day_end: 182,
-        status: "UPCOMING",
-        details: [
-            { day: 151, task: "Ngừng bón phân đạm trước thu hoạch 30 ngày", done: false },
-            { day: 160, task: "Kiểm tra độ Brix, đánh giá độ chín", done: false },
-            { day: 170, task: "Thu hoạch đợt 1 (trái đạt chuẩn kích thước)", done: false },
-            { day: 178, task: "Thu hoạch đợt 2, phân loại, đóng gói", done: false },
-            { day: 182, task: "Tổng kết sản lượng, ghi chép báo cáo", done: false },
-        ]
-    },
-];
+import type { TaskDto, WorkflowStage } from '../../models/Task';
+import axios from 'axios';
+import type { GrowthProcessBase } from '../../models/GrowthProcess';
+import { useNavigate, useParams } from 'react-router-dom';
+import { STAGE_CONFIG } from '../../utils/IconUtils';
+import {
+    Sun, Cloud, CloudFog, CloudDrizzle, CloudRain,
+    Snowflake, CloudSnow, CloudLightning, HelpCircle
+} from 'lucide-react';
+import { WeatherModal } from '../../components/modals/WeatherModal';
 
 const BATCH_LOGS: BatchLog[] = [
     { log_id: 1, event_type: "STATUS_CHANGE", content: "Lô được khởi tạo, bắt đầu giai đoạn chuẩn bị đất.", created_at: "2025-12-15 08:00", created_by: "Nguyễn Văn Kiệt", image_url: null },
@@ -117,11 +29,6 @@ const BATCH_LOGS: BatchLog[] = [
     { log_id: 7, event_type: "SENSOR_ALERT", content: "Cảm biến đất: Độ ẩm xuống 18% (ngưỡng cảnh báo 20%). Cần tưới bổ sung.", created_at: "2026-03-18 14:55", created_by: "IoT Sensor", image_url: null },
 ];
 
-type BatchDetailProps = {
-    batchId: number;
-    onBack: () => void;
-}
-
 const STATUS_COLOR = {
     ACTIVE: '#10b981',
     WARNING: '#f59e0b',
@@ -129,79 +36,216 @@ const STATUS_COLOR = {
     COMPLETED: '#94a3b8'
 };
 
-export default function BatchDetail({ batchId, onBack }: BatchDetailProps) {
-    const batch = MOCK_BATCH;
+const getWeatherVisuals = (code: number | undefined) => {
+    if (code === undefined) return { Icon: HelpCircle, color: 'text-slate-400' };
+    if (code === 0) return { Icon: Sun, color: 'text-amber-500' };
+    if (code <= 3) return { Icon: Cloud, color: 'text-slate-400' };
+    if (code <= 9) return { Icon: CloudFog, color: 'text-slate-300' };
+    if (code <= 19) return { Icon: CloudDrizzle, color: 'text-blue-400' };
+    if (code <= 29) return { Icon: CloudRain, color: 'text-blue-500' };
+    if (code <= 39) return { Icon: Snowflake, color: 'text-sky-300' };
+    if (code <= 49) return { Icon: CloudFog, color: 'text-slate-400' };
+    if (code <= 59) return { Icon: CloudDrizzle, color: 'text-blue-400' };
+    if (code <= 69) return { Icon: CloudRain, color: 'text-blue-600' };
+    if (code <= 79) return { Icon: Snowflake, color: 'text-sky-400' };
+    if (code <= 84) return { Icon: CloudRain, color: 'text-blue-500' };
+    if (code <= 94) return { Icon: CloudSnow, color: 'text-sky-500' };
+    return { Icon: CloudLightning, color: 'text-yellow-600' };
+}
+
+function weatherCodeToText(code: number | undefined): string {
+    if (code === undefined) return 'Không xác định';
+    if (code === 0) return 'Trời quang';
+    if (code <= 3) return 'Nhiều mây';
+    if (code <= 9) return 'Sương mù nhẹ';
+    if (code <= 19) return 'Mưa phùn';
+    if (code <= 29) return 'Mưa rào';
+    if (code <= 39) return 'Tuyết';
+    if (code <= 49) return 'Sương mù';
+    if (code <= 59) return 'Mưa phùn';
+    if (code <= 69) return 'Mưa vừa đến to';
+    if (code <= 79) return 'Tuyết';
+    if (code <= 84) return 'Mưa rào';
+    if (code <= 94) return 'Tuyết rào';
+    return 'Giông bão';
+}
+
+
+export default function BatchDetail() {
+    const [batch, setBatch] = useState<Batch | null>()
+    const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>()
+    const [stages, setStages] = useState<WorkflowStage[]>()
+    const [tasks, setTasks] = useState<TaskDto[]>([]);
     const [activeTab, setActiveTab] = useState('workflow');
     const [expandedStage, setExpandedStage] = useState<number | null>(3);
+    const [showWeatherModal, setShowWeatherModal] = useState(false);
+    const [weather, setWeather] = useState()
+    const { id } = useParams()
+    const navigate = useNavigate()
 
-    const currentDay = getDaysSinceStart(batch.start_date);
-    const currentStage = getCurrentStage(currentDay, WORKFLOW_STAGES);
-    const totalDays = getTotalDays(WORKFLOW_STAGES);
-    const daysUntilHarvest = Math.max(0, Math.floor((new Date(batch.expected_harvest).getTime() - new Date().getTime())
-        / (1000 * 60 * 60 * 24)
-    )
-    );
-    const progressPct = Math.min(100, Math.round((currentDay / (WORKFLOW_STAGES[WORKFLOW_STAGES.length - 1].day_end)) * 100));
+    useEffect(() => {
+        const fetchBatchDetail = async () => {
+            try {
+                const reponse = await axios.get(`http://localhost:8080/api/planting-batches/${id}`)
+                setBatch(reponse.data.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchBatchDetail()
+    }, [id])
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                const reponse = await axios.get(`http://localhost:8080/api/weather-alerts/dashboard/${1}`)
+                console.log(reponse.data)
+                setWeather(reponse.data.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        if (id) fetchWeather()
+    }, [id])
+
+    useEffect(() => {
+        if (!batch?.processId) return;
+
+        const fetchData = async () => {
+            try {
+                const [processRes, stagesRes] = await Promise.all([
+                    axios.get(`http://localhost:8080/api/growth-processes/detail/${batch.processId}`),
+                    axios.get(`http://localhost:8080/api/stages/process/${batch.processId}`)
+                ]);
+
+                setGrowthProcess(processRes.data.data);
+                setStages(stagesRes.data.data)
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchData();
+    }, [batch?.processId]);
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                console.log(id)
+                const response = await axios.get(`http://localhost:8080/api/tasks/batch/${id}`);
+                setTasks(response.data.data);
+            } catch (error) {
+                console.error("Error fetching tasks:", error);
+            }
+        };
+        if (id) fetchTasks();
+    }, [id]);
+
+    const handleToggleTask = async (taskId: number, currentStatus: string) => {
+        const newStatus = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+        try {
+            await axios.patch(`http://localhost:8080/api/tasks/${taskId}/status?status=${newStatus}`);
+            // Cập nhật local state để UI thay đổi ngay lập tức
+            setTasks(prev => prev.map(t => t.taskId === taskId ? { ...t, status: newStatus } : t));
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    if (!growthProcess || !batch || !stages) return
+
+    const currentDay = getDaysSinceStart(batch.startDate);
+    const currentStage = getCurrentStage(currentDay, stages);
+    const progressPct = Math.min(100, Math.round((currentDay / (stages[stages.length - 1].endDay)) * 100));
     const statusColor = STATUS_COLOR[batch.status as keyof typeof STATUS_COLOR] || '#94a3b8';
-    
+    const { Icon: WeatherIcon, color: weatherColor } = getWeatherVisuals(1);
+
     return (
-        <div key={batchId} className="min-h-screen bg-white font-['Be_Vietnam_Pro',_sans-serif] flex flex-col">
+        <div key={id} className="min-h-screen bg-white font-['Be_Vietnam_Pro',_sans-serif] flex flex-col overflow-x-hidden">
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');`}</style>
+
             <div className="bg-white border-b border-slate-100 sticky top-0 z-20 shadow-sm w-full">
                 <div className="px-4 flex items-center gap-3 h-12">
-                    <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 flex-shrink-0">
+                    {/* Nút Back */}
+                    <button onClick={() => navigate("/batches")} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 flex-shrink-0">
                         <ArrowLeftIcon className="h-5 w-5" />
                     </button>
 
+                    {/* Thông tin Batch */}
                     <div className="flex-1 min-w-0 flex items-center gap-2">
                         <h1 className="font-extrabold text-slate-900 text-base whitespace-nowrap">
-                            {batch.batch_name}
+                            {batch.batchName}
                         </h1>
-
                         <span className="text-slate-300 flex-shrink-0">|</span>
-
                         <p className="text-xs text-slate-500 truncate font-medium">
-                            {batch.crop_name} • {batch.variety}
+                            {batch.cropName} • {batch.variety}
                         </p>
+                        <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 animate-pulse`} style={{ backgroundColor: statusColor }} />
+                    </div>
 
-                        <div className={`h-3 w-3 rounded-full flex-shrink-0 animate-pulse`} style={{ backgroundColor: statusColor }} />
+                    {/* PHẦN MỚI: Icon thời tiết ở góc phải */}
+                    <div
+                        onClick={() => setShowWeatherModal(true)}
+                        className="flex items-center gap-2 pl-3 border-l border-slate-100 ml-auto flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors h-full px-2"
+                    >
+                        {weather &&
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-none">Chi tiết</p>
+                                <p className="text-[11px] font-bold text-slate-600 leading-tight">
+                                    {weather.weather.current.temperature_2m}°C
+                                </p>
+                            </div>
+                        }
+                        <div className={`p-1.5 rounded-md bg-slate-50 ${weatherColor}`}>
+                            <WeatherIcon className="h-5 w-5" />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="w-full px-0 pb-10 flex-1 overflow-y-auto space-y-0">
-                <div className="bg-slate-50 border-b border-slate-100 p-5">
-                    <div className="mb-6">
-                        <div className="flex justify-between text-xs text-slate-500 mb-2 font-bold uppercase tracking-wider">
-                            <span>Tiến độ tổng thể</span>
-                            <span className="text-slate-900">{progressPct}%</span>
+            <div className="w-full flex-1  bg-slate-50/30">
+                <div className="bg-white border-b border-slate-100 p-6">
+                    <div className="mb-8">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiến độ tổng thể</span>
+                            <span className="text-lg font-black text-slate-800">{progressPct}%</span>
                         </div>
-                        <StageProgressBar stages={WORKFLOW_STAGES} currentDay={currentDay} />
-                        <div className="flex justify-between text-[10px] mt-3 font-mono font-bold text-slate-400">
-                            <span>{batch.start_date}</span>
-                            <div className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
-                                NGÀY {currentDay} / {totalDays}
-                            </div>
-                            <span>{batch.expected_harvest}</span>
+                        <StageProgressBar stages={growthProcess.stages} totalDays={growthProcess.totalDays} currentDay={currentDay} />
+                        <div className="flex justify-between items-center text-[10px] mt-4 font-mono font-bold text-slate-400">
+                            <span>{formatDate(batch.startDate)}</span>
+                            <span className="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 shadow-sm">
+                                NGÀY {currentDay} / {growthProcess.totalDays}
+                            </span>
+                            <span className="text-slate-600">
+                                {getExpectedDate(batch.startDate, growthProcess.totalDays)}
+                            </span>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="grid grid-cols-2 md:grid-cols-4 border border-slate-100 divide-x divide-y md:divide-y-0 divide-slate-100 rounded-xl bg-slate-50/50">
                         {[
                             { label: "Ngày trồng", value: `N${currentDay}`, icon: "📅" },
-                            { label: "Diện tích", value: `${batch.area_m2}m²`, icon: "🏡" },
-                            { label: "Còn lại", value: `${daysUntilHarvest} ngày`, icon: "⏳" },
-                            { label: "Giai đoạn", value: currentStage.name.split(' ').slice(-1)[0], icon: currentStage.icon },
+                            { label: "Diện tích", value: `${batch.areaM2}m²`, icon: "🏡" },
+                            { label: "Còn lại", value: `${growthProcess.totalDays - currentDay} ngày`, icon: "⏳" },
+                            {
+                                label: "Giai đoạn",
+                                value: currentStage?.stageName?.split(' ').slice(-1)[0],
+                                icon: STAGE_CONFIG[currentStage?.stageId || 0]?.icon || "📌"
+                            },
                         ].map((item, i) => (
-                            <div key={i} className="bg-white p-4 flex flex-col items-center justify-center">
-                                <span className="text-xs text-slate-400 font-bold uppercase mb-1">{item.label}</span>
+                            <div key={i} className="p-5 flex flex-col justify-center bg-white hover:bg-slate-50/50 transition-colors">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                    <span>{item.icon}</span> {item.label}
+                                </span>
                                 <span className="text-lg font-black text-slate-800">{item.value}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="sticky top-[61px] z-10 bg-white border-b border-slate-100 flex w-full">
+                <div className="sticky top-[73px] z-10 bg-white border-b border-slate-100 flex w-full px-6 gap-6">
                     {[
                         { id: 'workflow', label: 'QUY TRÌNH', count: null },
                         { id: 'history', label: 'NHẬT KÝ', count: BATCH_LOGS.length },
@@ -209,45 +253,44 @@ export default function BatchDetail({ batchId, onBack }: BatchDetailProps) {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 py-4 text-xs font-black tracking-widest transition-all relative
-                                ${activeTab === tab.id ? 'text-emerald-600' : 'text-slate-400'}`}
+                            className={`py-4 text-[11px] font-bold tracking-widest uppercase transition-all relative
+                                ${activeTab === tab.id ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             {tab.label} {tab.count && `(${tab.count})`}
                             {activeTab === tab.id && (
-                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
+                                <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full bg-emerald-500" />
                             )}
                         </button>
                     ))}
                 </div>
 
-                <div className="p-4 bg-white">
-                    {activeTab === 'workflow' && (
+                <div className="p-6 max-w-4xl mx-auto">
+                    {activeTab === 'workflow' && stages && (
                         <div className="space-y-4">
-                            <div className="bg-emerald-600 rounded-2xl p-5 text-white flex items-center justify-between shadow-lg shadow-emerald-100">
-                                <div>
-                                    <p className="text-[10px] font-bold opacity-80 uppercase">Đang thực hiện</p>
-                                    <h2 className="text-xl font-black">{currentStage.name}</h2>
-                                    <p className="text-xs mt-1 opacity-90 font-medium">Kết thúc sau {currentStage.day_end - currentDay} ngày</p>
-                                </div>
-                                <span className="text-4xl">{currentStage.icon}</span>
-                            </div>
+                            <div className="space-y-3">
+                                {stages.map(stage => {
+                                    // Lọc các task thuộc stage này (Dựa vào logic ngày)
+                                    const stageTasks = tasks.filter(task => task.stageId === stage.stageId);
 
-                            <div className="space-y-3 pt-2">
-                                {WORKFLOW_STAGES.map(stage => (
-                                    <WorkflowStageCard
-                                        key={stage.stage_id}
-                                        stage={stage}
-                                        currentDay={currentDay}
-                                        isExpanded={expandedStage === stage.stage_id}
-                                        onToggle={() => setExpandedStage(expandedStage === stage.stage_id ? null : stage.stage_id)}
-                                    />
-                                ))}
+                                    return (
+                                        <WorkflowStageCard
+                                            key={stage.stageId}
+                                            stage={stage}
+                                            tasks={stageTasks} // Truyền list task đã lọc
+                                            batchStartDate={batch.startDate}
+                                            currentDay={currentDay}
+                                            isExpanded={expandedStage === stage.stageId}
+                                            onToggle={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
+                                            onTaskStatusChange={handleToggleTask} // Hàm gọi API update status
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'history' && (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {[...BATCH_LOGS].reverse().map(log => (
                                 <LogCard key={log.log_id} log={log} />
                             ))}
@@ -255,6 +298,16 @@ export default function BatchDetail({ batchId, onBack }: BatchDetailProps) {
                     )}
                 </div>
             </div>
+
+            {weather &&
+
+                <WeatherModal
+                    isOpen={showWeatherModal}
+                    onClose={() => setShowWeatherModal(false)}
+                    weatherData={weather.weather}
+                    batchName={weather.batchName}
+                />
+            }
         </div>
     );
 }

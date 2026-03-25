@@ -32,6 +32,9 @@ public class PlantingBatch {
     @Column(name = "area_m2")
     private Double areaM2;
 
+    @Column(name = "crop_count")
+    private Integer cropCount;
+
     @Column(name = "location_coords")
     private String locationCoords;
 
@@ -40,4 +43,8 @@ public class PlantingBatch {
 
     @Column(name = "status")
     private String status;
+
+    public void setpBatchId(Integer id) {
+        this.pBatchId = id;
+    }
 }

@@ -20,21 +20,31 @@ type LogProps = {
 
 export default function LogCard({ log }: LogProps) {
     const style = EVENT_STYLES[log.event_type] || EVENT_STYLES.TASK_COMPLETED;
+
     return (
-        <div className={`flex gap-3 p-4 rounded-2xl border ${style.bg} ${style.border}`}>
-            <div className="flex-shrink-0 mt-0.5">{style.icon}</div>
+        <div className={`flex gap-2 p-3 rounded-xl border ${style.bg} ${style.border}`}>
             <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${style.labelColor}`}>{style.label}</span>
-                    <span className="text-[11px] text-slate-400 font-mono">{log.created_at}</span>
-                    <span className="text-[11px] text-slate-500">• {log.created_by}</span>
+                <div className="flex items-center gap-2 text-[11px] flex-wrap">
+                    
+                    {/* Icon + Label */}
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold ${style.labelColor}`}>
+                        {style.icon}
+                        {style.label}
+                    </span>
+
+                    <span className="text-slate-400 font-mono">{log.created_at}</span>
+                    <span className="text-slate-400">• {log.created_by}</span>
+
+                    {log.image_url && (
+                        <span className="ml-auto inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline">
+                            <CameraIcon className="h-3 w-3" />
+                        </span>
+                    )}
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed">{log.content}</p>
-                {log.image_url && (
-                    <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-blue-600 font-semibold cursor-pointer hover:underline">
-                        <CameraIcon className="h-3.5 w-3.5" /> Xem ảnh đính kèm
-                    </div>
-                )}
+
+                <p className="text-xs text-slate-700 leading-snug mt-1">
+                    {log.content}
+                </p>
             </div>
         </div>
     );

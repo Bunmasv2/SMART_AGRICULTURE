@@ -59,10 +59,11 @@ public class AiAnalysisService {
     }
 
     public List<AiAnalysisDto> findByBatchId(Integer pBatchId) {
-        return aiAnalysisRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(aiAnalysisMapper::toDto).collect(Collectors.toList());
+        return aiAnalysisRepository.findByPlantingBatchPBatchId(pBatchId).stream().map(aiAnalysisMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<AiAnalysisDto> findById(Integer id) {
+    public Optional<AiAnalysisDto> findById(Long id) {
         return aiAnalysisRepository.findById(id).map(aiAnalysisMapper::toDto);
     }
 
@@ -71,15 +72,17 @@ public class AiAnalysisService {
         return aiAnalysisMapper.toDto(aiAnalysisRepository.save(entity));
     }
 
-    public Optional<AiAnalysisDto> update(Integer id, AiAnalysisDto dto) {
-        if (!aiAnalysisRepository.existsById(id)) return Optional.empty();
+    public Optional<AiAnalysisDto> update(Long id, AiAnalysisDto dto) {
+        if (!aiAnalysisRepository.existsById(id))
+            return Optional.empty();
         AiAnalysis entity = aiAnalysisMapper.toEntity(dto);
         entity.setAnalysisId(id);
         return Optional.of(aiAnalysisMapper.toDto(aiAnalysisRepository.save(entity)));
     }
 
-    public boolean deleteById(Integer id) {
-        if (!aiAnalysisRepository.existsById(id)) return false;
+    public boolean deleteById(Long id) {
+        if (!aiAnalysisRepository.existsById(id))
+            return false;
         aiAnalysisRepository.deleteById(id);
         return true;
     }
@@ -93,7 +96,7 @@ public class AiAnalysisService {
      * 5. Trả về AiAnalysisResponseDTO
      *
      * @throws ResourceNotFoundException if PlantingBatch not found
-     * @throws AiServiceException if AI service fails
+     * @throws AiServiceException        if AI service fails
      */
     @Transactional
     public AiAnalysisResponseDTO analyzeLeafImage(Integer pBatchId, MultipartFile imageFile) {
@@ -128,8 +131,8 @@ public class AiAnalysisService {
             if (!"success".equals(status)) {
                 // Get error message from Python AI
                 String errorMsg = jsonNode.has("message")
-                    ? jsonNode.get("message").asText()
-                    : "AI analysis returned error status";
+                        ? jsonNode.get("message").asText()
+                        : "AI analysis returned error status";
                 throw new AiServiceException("AI analysis failed: " + errorMsg);
             }
 
@@ -147,8 +150,7 @@ public class AiAnalysisService {
             // 4. Tạo JSON kết quả để lưu vào database
             String resultJson = String.format(
                     "{\"disease_class\":\"%s\",\"confidence\":%.4f,\"soil_condition\":\"%s\",\"care_recommendation\":\"%s\"}",
-                    diseaseClass, confidence, mapping.getSoilCondition(), mapping.getCareRecommendation()
-            );
+                    diseaseClass, confidence, mapping.getSoilCondition(), mapping.getCareRecommendation());
 
             // 5. Lưu vào database
             AiAnalysis analysis = AiAnalysis.builder()

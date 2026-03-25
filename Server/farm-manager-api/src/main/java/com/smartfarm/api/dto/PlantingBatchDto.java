@@ -12,9 +12,11 @@ public class PlantingBatchDto {
     private String batchName;
     private Integer cropId;
     private String cropName;
+    private String variety;
     private Integer processId;
     private String processName;
     private Double areaM2;
+    private Integer cropCount;
     private String locationCoords;
     private LocalDate startDate;
     private String status;

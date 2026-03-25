@@ -16,7 +16,7 @@ public class AiAnalysis {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "analysis_id")
-    private Integer analysisId;
+    private Long analysisId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_batch_id")
