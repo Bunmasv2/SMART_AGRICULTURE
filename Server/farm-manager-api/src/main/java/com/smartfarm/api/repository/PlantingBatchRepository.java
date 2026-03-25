@@ -19,6 +19,9 @@ public interface PlantingBatchRepository extends JpaRepository<PlantingBatch, In
      * Dùng @Query thay vì method name vì JPA parser không resolve đúng
      * field "pBatchId" (chữ p thường) khi tạo tên method.
      */
-    @Query("SELECT p FROM PlantingBatch p WHERE p.locationCoords IS NOT NULL ORDER BY p.pBatchId DESC LIMIT 1")
+    @Query("SELECT p FROM PlantingBatch p WHERE p.locationCoords IS NOT NULL AND TRIM(p.locationCoords) != '' ORDER BY p.pBatchId DESC LIMIT 1")
     Optional<PlantingBatch> findLatestWithCoords();
+
+    @Query("SELECT p FROM PlantingBatch p WHERE p.locationCoords IS NOT NULL AND TRIM(p.locationCoords) != ''")
+    List<PlantingBatch> findAllWithCoords();
 }

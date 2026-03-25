@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@stomp/stompjs": "^7.3.0",
     "ag-grid-community": "^35.1.0",
     "ag-grid-react": "^35.1.0",
     "axios": "^1.13.6",

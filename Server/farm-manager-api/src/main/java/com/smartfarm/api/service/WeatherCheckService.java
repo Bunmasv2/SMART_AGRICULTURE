@@ -16,6 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.smartfarm.api.entity.User;
+import com.smartfarm.api.repository.UserRepository;
 
 /**
  * Service kiểm tra điều kiện thời tiết và sinh cảnh báo tự động.
@@ -42,16 +48,25 @@ public class WeatherCheckService {
     private final WeatherAlertRepository weatherAlertRepository;
     private final WeatherAlertMapper weatherAlertMapper;
     private final OpenMeteoService openMeteoService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
+    private final UserRepository userRepository;
 
     @Autowired
     public WeatherCheckService(PlantingBatchRepository plantingBatchRepository,
             WeatherAlertRepository weatherAlertRepository,
             WeatherAlertMapper weatherAlertMapper,
-            OpenMeteoService openMeteoService) {
+            OpenMeteoService openMeteoService,
+            SimpMessagingTemplate messagingTemplate,
+            EmailService emailService,
+            UserRepository userRepository) {
         this.plantingBatchRepository = plantingBatchRepository;
         this.weatherAlertRepository = weatherAlertRepository;
         this.weatherAlertMapper = weatherAlertMapper;
         this.openMeteoService = openMeteoService;
+        this.messagingTemplate = messagingTemplate;
+        this.emailService = emailService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -153,7 +168,123 @@ public class WeatherCheckService {
 
         log.info("Generated {} weather alert(s) for batch '{}'", saved.size(), batch.getBatchName());
 
-        return saved.stream().map(weatherAlertMapper::toDto).toList();
+        List<WeatherAlertDto> alertDtos = saved.stream().map(weatherAlertMapper::toDto).toList();
+
+        if (!alertDtos.isEmpty()) {
+            pushWebSockets(alertDtos);
+            sendBulkEmailToUsers(alertDtos);
+        }
+
+        return alertDtos;
+    }
+
+    public void checkAllLocationsAndGenerateAlerts() {
+        List<PlantingBatch> allBatches = plantingBatchRepository.findAllWithCoords();
+        if (allBatches.isEmpty()) {
+            log.info("Không có PlantingBatch nào có tọa độ hợp lệ để kiểm tra thời tiết.");
+            return;
+        }
+
+        // Nhóm batches theo locationCoords để tránh gọi API lặp lại
+        Map<String, List<PlantingBatch>> batchesByLocation = allBatches.stream()
+                .collect(Collectors.groupingBy(PlantingBatch::getLocationCoords));
+
+        List<WeatherAlertDto> allGeneratedAlerts = new ArrayList<>();
+
+        for (Map.Entry<String, List<PlantingBatch>> entry : batchesByLocation.entrySet()) {
+            String locationCoords = entry.getKey();
+            List<PlantingBatch> batchesAtLocation = entry.getValue();
+
+            try {
+                // Chỉ gọi API 1 lần cho mỗi vị trí
+                WeatherCurrentDto weatherData = openMeteoService.getCurrentWeather(locationCoords);
+                if (weatherData == null || weatherData.getCurrent() == null)
+                    continue;
+
+                WeatherCurrentDto.Current w = weatherData.getCurrent();
+
+                // Mảng lưu tạm các type và desc cảnh báo
+                List<String[]> tempAlerts = new ArrayList<>();
+
+                if (w.getWeatherCode() != null && w.getWeatherCode() >= STORM_WEATHER_CODE) {
+                    tempAlerts.add(new String[] { "STORM",
+                            String.format(
+                                    "⛈️ CẢNH BÁO GIÔNG BÃO - Mã thời tiết: %d. Hãy đảm bảo an toàn cho cây trồng.",
+                                    w.getWeatherCode()) });
+                }
+                if (w.getPrecipitationProbability() != null
+                        && w.getPrecipitationProbability() >= RAIN_PROBABILITY_THRESHOLD) {
+                    tempAlerts.add(new String[] { "RAIN_RISK",
+                            String.format("🌧️ NGUY CƠ MƯA LỚN - Xác suất: %d%%. Che phủ cây trồng.",
+                                    w.getPrecipitationProbability()) });
+                }
+                if (w.getTemperature() != null && w.getTemperature() >= HIGH_TEMP_THRESHOLD) {
+                    tempAlerts.add(new String[] { "HIGH_TEMP",
+                            String.format("🌡️ NHIỆT ĐỘ CAO - %.1f°C. Hãy tưới nước...", w.getTemperature()) });
+                }
+                if (w.getTemperature() != null && w.getTemperature() <= LOW_TEMP_THRESHOLD) {
+                    tempAlerts.add(new String[] { "LOW_TEMP",
+                            String.format("❄️ NHIỆT ĐỘ THẤP - %.1f°C. Che phủ chống sương giá.", w.getTemperature()) });
+                }
+                if (w.getWindSpeed() != null && w.getWindSpeed() >= STRONG_WIND_THRESHOLD) {
+                    tempAlerts.add(new String[] { "STRONG_WIND",
+                            String.format("💨 GIÓ MẠNH - %.1f km/h.", w.getWindSpeed()) });
+                }
+                if (w.getRelativeHumidity() != null && w.getRelativeHumidity() >= HIGH_HUMIDITY_THRESHOLD) {
+                    tempAlerts.add(new String[] { "HIGH_HUMIDITY",
+                            String.format("💧 ĐỘ ẨM CAO - %d%%. Tuần hoàn không khí...", w.getRelativeHumidity()) });
+                }
+
+                if (tempAlerts.isEmpty())
+                    continue;
+
+                // Áp dụng cảnh báo cho tất cả Batch ở location này
+                List<WeatherAlert> allAlertsToSave = new ArrayList<>();
+                for (PlantingBatch batch : batchesAtLocation) {
+                    for (String[] alertInfo : tempAlerts) {
+                        allAlertsToSave.add(buildAlert(batch, alertInfo[0], alertInfo[1]));
+                    }
+                }
+
+                List<WeatherAlert> savedAlerts = weatherAlertRepository.saveAll(allAlertsToSave);
+                List<WeatherAlertDto> alertDtos = savedAlerts.stream().map(weatherAlertMapper::toDto).toList();
+
+                allGeneratedAlerts.addAll(alertDtos);
+
+                // Push WebSockets ra real-time trực tiếp trong loop hoặc gom lại
+                if (!alertDtos.isEmpty()) {
+                    pushWebSockets(alertDtos);
+                }
+
+            } catch (Exception e) {
+                log.error("Lỗi khi kiểm tra thời tiết gộp cho {}: {}", locationCoords, e.getMessage());
+            }
+        }
+
+        // Gửi Gộp 1 Email Duy Nhất nếu có cảnh báo!
+        if (!allGeneratedAlerts.isEmpty()) {
+            sendBulkEmailToUsers(allGeneratedAlerts);
+        }
+    }
+
+    private void pushWebSockets(List<WeatherAlertDto> alertDtos) {
+        for (WeatherAlertDto dto : alertDtos) {
+            messagingTemplate.convertAndSend("/topic/weather-alerts", dto);
+        }
+    }
+
+    private void sendBulkEmailToUsers(List<WeatherAlertDto> alerts) {
+        List<User> usersToNotify = userRepository.findAll().stream()
+                .filter(u -> u.isVerified() && u.getEmail() != null)
+                .toList();
+
+        for (User user : usersToNotify) {
+            try {
+                emailService.sendSummarizedWeatherAlertEmail(user.getEmail(), user.getFullName(), alerts);
+            } catch (Exception e) {
+                log.error("Lỗi khi gửi mail cảnh báo tổng hợp: {}", e.getMessage());
+            }
+        }
     }
 
     /**
