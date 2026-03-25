@@ -22,6 +22,7 @@ public class GrowthProcessMapper {
         if (entity.getCrop() != null) {
             dto.setCropId(entity.getCrop().getCropId());
             dto.setCropName(entity.getCrop().getCropName());
+            dto.setVariety(entity.getCrop().getVariety());
         }
         return dto;
     }
@@ -41,8 +42,7 @@ public class GrowthProcessMapper {
     }
 
     public GrowthProcessDetailDto toDetailDto(GrowthProcess entity) {
-        if (entity == null)
-            return null;
+        if (entity == null) return null;
 
         GrowthProcessDetailDto detailDto = GrowthProcessDetailDto.builder()
                 .processId(entity.getProcessId())
@@ -63,6 +63,17 @@ public class GrowthProcessMapper {
                             .stageName(stage.getStageName())
                             .startDay(stage.getStartDay())
                             .endDay(stage.getEndDay())
+                            // --- BỔ SUNG MAPPING TASK TEMPLATES TẠI ĐÂY ---
+                            .taskTemplates(stage.getTaskTemplates() != null ? 
+                                stage.getTaskTemplates().stream()
+                                    .map(tt -> GrowthProcessDetailDto.TaskTemplateDto.builder()
+                                            .taskTmpId(tt.getTaskTmpId())
+                                            .taskName(tt.getTaskName())
+                                            .offsetDay(tt.getOffsetDay())
+                                            .quantityRequired(tt.getQuantityRequired())
+                                            .build())
+                                    .collect(Collectors.toList()) : null)
+                            // ----------------------------------------------
                             .build())
                     .collect(Collectors.toList()));
         }

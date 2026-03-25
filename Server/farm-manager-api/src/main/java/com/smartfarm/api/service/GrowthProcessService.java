@@ -60,6 +60,17 @@ public class GrowthProcessService {
         return true;
     }
 
+    public int deleteByIds(List<Long> ids) {
+        List<GrowthProcess> processes = growthProcessRepository.findAllById(ids);
+
+        if (processes.isEmpty()) {
+            throw new RuntimeException("No GrowthProcess found with provided IDs");
+        }
+
+        growthProcessRepository.deleteAll(processes);
+        return processes.size();
+    }
+
     public Optional<GrowthProcessDetailDto> findDetailById(Long id) {
         return growthProcessRepository.findById(id).map(growthProcessMapper::toDetailDto);
     }

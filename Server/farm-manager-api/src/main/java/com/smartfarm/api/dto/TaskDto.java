@@ -11,6 +11,11 @@ public class TaskDto {
     private Long taskId;
     private Long pBatchId;
     private String batchName;
+    
+    // Thêm thông tin Stage
+    private Long stageId;
+    private String stageName;
+    
     private Long taskTmpId;
     private String taskTemplateName;
     private String title;

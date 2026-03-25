@@ -7,7 +7,7 @@ import LogCard from '../../components/cards/LogCard';
 import WorkflowStageCard from '../../components/cards/WorkflowStageCard';
 import { formatDate, getCurrentStage, getDaysSinceStart, getExpectedDate } from '../../utils/DataUitls';
 import type { Batch, BatchLog } from '../../models/Batch';
-import type { WorkflowStage } from '../../models/Task';
+import type { TaskDto, WorkflowStage } from '../../models/Task';
 import axios from 'axios';
 import type { GrowthProcessBase } from '../../models/GrowthProcess';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -34,6 +34,7 @@ export default function BatchDetail() {
     const [batch, setBatch] = useState<Batch | null>()
     const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>()
     const [stages, setStages] = useState<WorkflowStage[]>()
+    const [tasks, setTasks] = useState<TaskDto[]>([]);
     const [activeTab, setActiveTab] = useState('workflow');
     const [expandedStage, setExpandedStage] = useState<number | null>(3);
     const { id } = useParams()
@@ -71,6 +72,30 @@ export default function BatchDetail() {
 
         fetchData();
     }, [batch?.processId]);
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                console.log(id)
+                const response = await axios.get(`http://localhost:8080/api/tasks/batch/${id}`);
+                setTasks(response.data.data);
+            } catch (error) {
+                console.error("Error fetching tasks:", error);
+            }
+        };
+        if (id) fetchTasks();
+    }, [id]);
+
+    const handleToggleTask = async (taskId: number, currentStatus: string) => {
+        const newStatus = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+        try {
+            await axios.patch(`http://localhost:8080/api/tasks/${taskId}/status?status=${newStatus}`);
+            // Cập nhật local state để UI thay đổi ngay lập tức
+            setTasks(prev => prev.map(t => t.taskId === taskId ? { ...t, status: newStatus } : t));
+        } catch (error) {
+            console.log(error)
+        }
+    };
 
     if (!growthProcess || !batch || !stages) return
 
@@ -167,15 +192,23 @@ export default function BatchDetail() {
                     {activeTab === 'workflow' && stages && (
                         <div className="space-y-4">
                             <div className="space-y-3">
-                                {stages.map(stage => (
-                                    <WorkflowStageCard
-                                        key={stage.stageId}
-                                        stage={stage}
-                                        currentDay={currentDay}
-                                        isExpanded={expandedStage === stage.stageId}
-                                        onToggle={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
-                                    />
-                                ))}
+                                {stages.map(stage => {
+                                    // Lọc các task thuộc stage này (Dựa vào logic ngày)
+                                    const stageTasks = tasks.filter(task => task.stageId === stage.stageId);
+
+                                    return (
+                                        <WorkflowStageCard
+                                            key={stage.stageId}
+                                            stage={stage}
+                                            tasks={stageTasks} // Truyền list task đã lọc
+                                            batchStartDate={batch.startDate}
+                                            currentDay={currentDay}
+                                            isExpanded={expandedStage === stage.stageId}
+                                            onToggle={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
+                                            onTaskStatusChange={handleToggleTask} // Hàm gọi API update status
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

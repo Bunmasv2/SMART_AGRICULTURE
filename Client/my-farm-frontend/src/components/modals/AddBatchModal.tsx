@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { XMarkIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import type { CropBase } from '../models/Crop';
-import type { GrowthProcess } from '../models/GrowthProcess';
+import type { CropBase } from '../../models/Crop';
+import type { GrowthProcessBase } from '../../models/GrowthProcess';
 import { PlusIcon } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +14,7 @@ interface AddBatchModalProps {
 
 export default function AddBatchModal({ isOpen, onClose, onSuccess }: AddBatchModalProps) {
     const [crops, setCrops] = useState<CropBase[]>([]);
-    const [processes, setProcesses] = useState<GrowthProcess[]>([]);
+    const [processes, setProcesses] = useState<GrowthProcessBase[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({

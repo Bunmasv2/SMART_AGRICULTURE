@@ -1,5 +1,7 @@
 package com.smartfarm.api.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,4 +31,7 @@ public class Stage {
 
     @Column(name = "end_day", nullable = false)
     private Integer endDay;
+
+    @OneToMany(mappedBy = "stage", fetch = FetchType.LAZY)
+    private List<TaskTemplate> taskTemplates;
 }

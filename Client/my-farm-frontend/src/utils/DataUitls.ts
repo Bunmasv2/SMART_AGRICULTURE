@@ -30,3 +30,20 @@ export const getExpectedDate = (startDateStr: string, totalDays: number) => {
 export const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('vi-VN');
 };
+
+export const getDayNumber = (targetDate: string | Date, startDate: string | Date): number => {
+    const start = new Date(startDate);
+    const target = new Date(targetDate);
+
+    // Reset về 00:00:00 để chỉ tính khoảng cách ngày, không tính giờ
+    start.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - start.getTime();
+    
+    // 1 ngày = 24h * 60p * 60s * 1000ms = 86,400,000 ms
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // +1 vì ngày bắt đầu được tính là Ngày 1
+    return diffDays + 1;
+};

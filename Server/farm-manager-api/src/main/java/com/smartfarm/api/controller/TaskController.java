@@ -45,6 +45,26 @@ public class TaskController {
         }
     }
 
+    @GetMapping("/batch/{batchId}")
+    public ResponseEntity<ApiResponse<List<TaskDto>>> getTasksByBatch(@PathVariable Long batchId) {
+        List<TaskDto> tasks = taskService.findByBatchId(batchId);
+        return ResponseEntity.ok(ApiResponse.success(tasks));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<TaskDto>> updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+
+        // Chuyển đổi status sang viết hoa để đồng nhất dữ liệu
+        String upperStatus = status.toUpperCase();
+
+        return taskService.updateStatus(id, upperStatus)
+                .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.notFound("Không tìm thấy công việc với ID: " + id)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskDto>> getById(@PathVariable Long id) {
         return taskService.findById(id)

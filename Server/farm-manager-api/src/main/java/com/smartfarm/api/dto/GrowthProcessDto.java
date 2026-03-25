@@ -10,6 +10,7 @@ public class GrowthProcessDto {
     private Long processId;
     private Long cropId;
     private String cropName;
+    private String variety;
     private String processName;
     private Integer totalDays;
 }

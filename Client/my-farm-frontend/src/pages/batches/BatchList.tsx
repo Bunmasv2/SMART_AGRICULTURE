@@ -8,7 +8,7 @@ import type { Batch } from '../../models/Batch';
 import PieCharBatch from '../../components/charts/PieCharBatch';
 import ComposedChartBatch from '../../components/charts/ComposedChartBatch';
 import { TrashIcon } from 'lucide-react';
-import AddBatchModal from '../../modals/AddBatchModal';
+import AddBatchModal from '../../components/modals/AddBatchModal';
 import { useNavigate } from 'react-router-dom';
 
 const COLORS: Record<string, string> = {

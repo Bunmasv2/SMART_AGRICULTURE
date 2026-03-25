@@ -12,13 +12,10 @@ public class GrowthProcessDetailDto {
     private Long processId;
     private String processName;
     private Integer totalDays;
-    
-    // Thông tin từ Crop
     private Long cropId;
     private String cropName;
     private String variety;
 
-    // Danh sách các giai đoạn
     private List<StageDto> stages;
 
     @Data
@@ -30,5 +27,20 @@ public class GrowthProcessDetailDto {
         private String stageName;
         private Integer startDay;
         private Integer endDay;
+        
+        // Bổ sung danh sách công việc mẫu của từng giai đoạn
+        private List<TaskTemplateDto> taskTemplates; 
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TaskTemplateDto {
+        private Long taskTmpId;
+        private String taskName;
+        private Integer offsetDay;
+        private Double quantityRequired;
+        private String itemName; // Lấy từ InventoryItem
     }
 }

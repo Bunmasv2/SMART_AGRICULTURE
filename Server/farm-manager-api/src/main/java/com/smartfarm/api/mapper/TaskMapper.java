@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TaskMapper {
     public TaskDto toDto(Task entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         TaskDto dto = TaskDto.builder()
                 .taskId(entity.getTaskId())
                 .title(entity.getTitle())
@@ -19,6 +20,19 @@ public class TaskMapper {
                 .status(entity.getStatus())
                 .notes(entity.getNotes())
                 .build();
+
+        // Mapping từ TaskTemplate để lấy thông tin Stage
+        if (entity.getTaskTemplate() != null) {
+            dto.setTaskTmpId(entity.getTaskTemplate().getTaskTmpId());
+            dto.setTaskTemplateName(entity.getTaskTemplate().getTaskName());
+
+            // Lấy Stage ID và Name từ Template
+            if (entity.getTaskTemplate().getStage() != null) {
+                dto.setStageId(entity.getTaskTemplate().getStage().getStageId());
+                dto.setStageName(entity.getTaskTemplate().getStage().getStageName());
+            }
+        }
+
         if (entity.getPlantingBatch() != null) {
             dto.setPBatchId(entity.getPlantingBatch().getPBatchId());
             dto.setBatchName(entity.getPlantingBatch().getBatchName());
@@ -35,7 +49,8 @@ public class TaskMapper {
     }
 
     public Task toEntity(TaskDto dto) {
-        if (dto == null) return null;
+        if (dto == null)
+            return null;
         Task entity = Task.builder()
                 .taskId(dto.getTaskId())
                 .title(dto.getTitle())

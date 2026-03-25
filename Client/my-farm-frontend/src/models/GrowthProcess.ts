@@ -9,3 +9,13 @@ export interface GrowthProcessBase {
     totalDays: number
     stages: StageBase[]
 }
+
+export interface ProcessDetail {
+    processId: number;
+    processName: string;
+    totalDays: number;
+    cropId: number;
+    cropName: string;
+    variety: string;
+    stages: StageBase[];
+}

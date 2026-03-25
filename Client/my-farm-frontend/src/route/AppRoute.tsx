@@ -2,10 +2,10 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import BatchDetail from '../pages/batches/BatchDetail';
+import GrowthProcessDetail from '../pages/processes/GrowthProcessDetail';
 
 const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
 const Batches = lazy(() => import('../pages/batches/BatchList'));
-const BatchCreation = lazy(() => import('../pages/batches/BatchCreation'));
 const BatchLifecycle = lazy(() => import('../pages/batches/BatchLifecycle'));
 const Processes = lazy(() => import('../pages/processes/GrowthProcess'));
 const Inventory = lazy(() => import('../pages/inventory/Inventory'));
@@ -25,11 +25,11 @@ const AppRoutes = () => {
                         <Route path="/batches">
                             <Route index element={<Batches />} />
                             <Route path=":id" element={<BatchDetail />} />
-                            <Route path="create" element={<BatchCreation />} />
                             <Route path="lifecycle/:id" element={<BatchLifecycle />} />
                         </Route>
 
                         <Route path="/processes" element={<Processes />} />
+                        <Route path="/processes/:id" element={<GrowthProcessDetail />} />
 
                         <Route path="/inventory" element={<Inventory />} />
 

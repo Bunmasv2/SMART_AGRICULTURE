@@ -84,6 +84,19 @@ public class GrowthProcessController {
         }
     }
 
+    @DeleteMapping("/bulk-delete")
+    public ResponseEntity<ApiResponse<Void>> deleteBulk(@RequestBody List<Long> ids) {
+        try {
+            int deletedCount = growthProcessService.deleteByIds(ids);
+
+            return ResponseEntity.ok(
+                    ApiResponse.success(null, "Deleted " + deletedCount + " growth processes successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
+
     @GetMapping("/detail/{id}")
     public ResponseEntity<ApiResponse<GrowthProcessDetailDto>> getDetailById(@PathVariable Long id) {
         return growthProcessService.findDetailById(id)
