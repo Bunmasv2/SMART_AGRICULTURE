@@ -64,7 +64,8 @@ public class InventoryBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<InventoryBatchDto>> update(@PathVariable Integer id, @RequestBody InventoryBatchDto dto) {
+    public ResponseEntity<ApiResponse<InventoryBatchDto>> update(@PathVariable Integer id,
+            @RequestBody InventoryBatchDto dto) {
         try {
             return inventoryBatchService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "InventoryBatch updated successfully")))

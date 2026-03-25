@@ -206,4 +206,40 @@ public class WeatherAlertController {
                     .body(ApiResponse.error(500, "Lỗi khi lấy dữ liệu dashboard: " + e.getMessage()));
         }
     }
+
+    /**
+     * Dashboard endpoint: lấy thông tin thời tiết hiện tại + cảnh báo mới nhất
+     * TRỰC TIẾP cho một lô trồng cụ thể (pBatchId).
+     * <p>
+     * Endpoint: GET /api/weather-alerts/dashboard/{pBatchId}
+     * Response: { weather: WeatherCurrentDto, alerts: List<WeatherAlertDto>,
+     * batchName, batchId }
+     */
+    @GetMapping("/dashboard/{pBatchId}")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardWeatherByBatchId(
+            @PathVariable Integer pBatchId) {
+        try {
+            PlantingBatch batch = plantingBatchRepository.findById(pBatchId).orElse(null);
+
+            if (batch == null || batch.getLocationCoords() == null || batch.getLocationCoords().isBlank()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error(404,
+                                "Không tìm thấy lô trồng hoặc lô trồng chưa có tọa độ (locationCoords)."));
+            }
+
+            // Lấy thời tiết hiện tại
+            WeatherCurrentDto weather = weatherCheckService.getWeatherInfo(batch.getPBatchId());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("batchId", batch.getPBatchId());
+            result.put("batchName", batch.getBatchName());
+            result.put("locationCoords", batch.getLocationCoords());
+            result.put("weather", weather);
+
+            return ResponseEntity.ok(ApiResponse.success(result, "Dashboard weather data for batch " + pBatchId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, "Lỗi khi lấy dữ liệu thời tiết: " + e.getMessage()));
+        }
+    }
 }
