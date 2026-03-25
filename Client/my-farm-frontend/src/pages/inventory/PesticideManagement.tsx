@@ -108,6 +108,9 @@ export default function PesticideManagement() {
             field: "quantity",
             width: 130,
             sortable: true,
+            valueFormatter: (params) => {
+                return `${params.value} ${params.data?.unit}`;
+            },
             cellStyle: (params): CellStyle => ({
                 color: params.value < 50 ? "#f97316" : "#16a34a",
                 fontWeight: "bold",
@@ -116,8 +119,21 @@ export default function PesticideManagement() {
         {
             headerName: "Ngày nhập",
             field: "receivedDate",
-            width: 140,
+            width: 160,
             sortable: true,
+            valueFormatter: (params) => {
+                if (!params.value) return "";
+
+                const d = new Date(params.value);
+
+                const day = String(d.getDate()).padStart(2, "0");
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const year = d.getFullYear();
+                const hours = String(d.getHours()).padStart(2, "0");
+                const minutes = String(d.getMinutes()).padStart(2, "0");
+
+                return `${day}-${month}-${year} ${hours}:${minutes}`;
+            },
         },
         {
             headerName: "NSX",

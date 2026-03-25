@@ -103,6 +103,25 @@ export default function AddFertilizerModal({
         }
     };
 
+    const getNowDateTimeLocal = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hours = String(d.getHours()).padStart(2, "0");
+        const minutes = String(d.getMinutes()).padStart(2, "0");
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const getToday = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
     return (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
             <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden">
@@ -148,6 +167,10 @@ export default function AddFertilizerModal({
                         }
                     />
 
+                    <div className=" text-sm text-gray-500 text-left">
+                        <p>Số lượng</p>
+                    </div>
+
                     <input
                         type="number"
                         placeholder="Số lượng"
@@ -161,11 +184,17 @@ export default function AddFertilizerModal({
                         }
                     />
 
+                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-500 text-left">
+                        <p>Ngày nhận</p>
+                        <p>Ngày sản xuất</p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <input
-                            type="date"
+                            type="datetime-local"
                             className="border p-3 rounded-xl"
                             value={formData.receivedDate}
+                            min={getNowDateTimeLocal()}
                             onChange={(e) =>
                                 setFormData({
                                     ...formData,
@@ -186,9 +215,14 @@ export default function AddFertilizerModal({
                             }
                         />
 
+                        <div className="gap-4 text-sm text-gray-500 text-left">
+                            <p>Ngày hết hạn</p>
+                        </div>
+
                         <input
                             type="date"
                             className="col-span-2 border p-3 rounded-xl"
+                            min={getToday()}
                             value={formData.expiryDate}
                             onChange={(e) =>
                                 setFormData({
