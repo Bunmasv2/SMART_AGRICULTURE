@@ -1,6 +1,6 @@
 export type BatchStatus = 'ACTIVE' | 'WARNING' | 'HARVESTING' | 'COMPLETED';
 
-export type StageStatus = 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING';
+export type StageStatus = 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING' | 'EXPIRED'
 
 // Log event type
 export type LogEventType =
@@ -10,17 +10,17 @@ export type LogEventType =
     | 'SENSOR_ALERT';
 
 export interface Batch {
-    p_batch_id: number;
-    batch_name: string;
-    crop_name: string;
+    pBatchId: number;
+    processId: number
+    batchName: string;
+    cropCount: number
+    processName: string
+    cropName: string;
     variety: string;
-    area_m2: number;
-    start_date: string; // ISO string (sau này nên convert Date)
-    expected_harvest: string;
+    areaM2: number;
+    startDate: string;
     status: BatchStatus;
-    farmer: string;
     location: string;
-    notes?: string;
 }
 
 export interface BatchLog {

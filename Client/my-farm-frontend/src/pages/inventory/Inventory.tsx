@@ -5,7 +5,6 @@ import {
     PencilSquareIcon, 
     TrashIcon, 
     MagnifyingGlassIcon,
-    BeakerIcon,
     CalendarDaysIcon,
     ArchiveBoxIcon,
     ChevronDownIcon,
@@ -27,8 +26,8 @@ interface SeedBatch {
     quantity: number | '';
     expiryDate: string;
     productionDate: string;
-    germinationRate: number | '';
     receivedDate?: string;
+    minThreshold?: number;
 }
 
 export default function Inventory() {
@@ -38,6 +37,7 @@ export default function Inventory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSeed, setEditingSeed] = useState<SeedBatch | null>(null);
+    const [filterType, setFilterType] = useState<'all' | 'attention'>('all');
 
     // Form State
     const [formData, setFormData] = useState<SeedBatch>({
@@ -46,8 +46,8 @@ export default function Inventory() {
         quantity: 0,
         expiryDate: '',
         productionDate: '',
-        germinationRate: 0,
-        cropId: undefined
+        cropId: undefined,
+        minThreshold: 0
     });
 
     useEffect(() => {
@@ -82,8 +82,8 @@ export default function Inventory() {
                 quantity: 0,
                 expiryDate: '',
                 productionDate: '',
-                germinationRate: 0,
-                cropId: crops.length > 0 ? crops[0].cropId : undefined
+                cropId: crops.length > 0 ? crops[0].cropId : undefined,
+                minThreshold: 10 // Default threshold
             });
         }
         setIsModalOpen(true);
@@ -100,8 +100,7 @@ export default function Inventory() {
             // Convert empty strings back to 0 for submission
             const submissionData = {
                 ...formData,
-                quantity: formData.quantity === '' ? 0 : formData.quantity,
-                germinationRate: formData.germinationRate === '' ? 0 : formData.germinationRate
+                quantity: formData.quantity === '' ? 0 : formData.quantity
             };
 
             if (editingSeed) {
@@ -111,7 +110,8 @@ export default function Inventory() {
                     itemName: formData.itemName,
                     category: 'SEED',
                     unit: 'kg',
-                    cropId: formData.cropId
+                    cropId: formData.cropId,
+                    minThreshold: formData.minThreshold
                 });
                 
                 const newItem = itemRes.data.data;
@@ -140,10 +140,16 @@ export default function Inventory() {
         }
     };
 
-    const filteredSeeds = seeds.filter(seed => 
-        seed.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        seed.supplier.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSeeds = seeds.filter(seed => {
+        const matchesSearch = seed.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              seed.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (filterType === 'attention') {
+            return matchesSearch && (isExpired(seed.expiryDate) || isNearExpiry(seed.expiryDate) || isLowStock(seed.quantity, seed.minThreshold));
+        }
+        
+        return matchesSearch;
+    });
 
     return (
         <div className="min-h-screen bg-[#f8faf7] p-4 md:p-8 text-slate-900 font-sans">
@@ -186,10 +192,16 @@ export default function Inventory() {
                         color="blue" 
                     />
                     <StatCard 
-                        title="Tỷ lệ nảy mầm TB" 
-                        value={`${seeds.length ? Math.round(seeds.reduce((acc, s) => acc + (Number(s.germinationRate) || 0), 0) / seeds.length) : 0}%`} 
-                        icon={<BeakerIcon />} 
-                        color="indigo" 
+                        title="Hạt giống cần chú ý" 
+                        value={seeds.filter(s => 
+                            isExpired(s.expiryDate) || 
+                            isNearExpiry(s.expiryDate) || 
+                            isLowStock(s.quantity, s.minThreshold)
+                        ).length.toString()} 
+                        icon={<PlusIcon />} 
+                        color="red"
+                        onClick={() => setFilterType('attention')}
+                        isActive={filterType === 'attention'}
                     />
                 </div>
 
@@ -207,8 +219,19 @@ export default function Inventory() {
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500/20 transition-all font-medium"
                             />
                         </div>
-                        <div className="flex gap-2">
-                             {/* Optional filter buttons could go here */}
+                        <div className="flex items-center gap-3">
+                            {filterType === 'attention' && (
+                                <button 
+                                    onClick={() => setFilterType('all')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl font-bold text-sm border border-red-100 hover:bg-red-100 transition-all animate-in slide-in-from-right-4"
+                                >
+                                    <span>Đang xem: Cần chú ý</span>
+                                    <XMarkIcon className="h-4 w-4" />
+                                </button>
+                            )}
+                            <div className="flex gap-2">
+                                 {/* Optional filter buttons could go here */}
+                            </div>
                         </div>
                     </div>
 
@@ -222,19 +245,18 @@ export default function Inventory() {
                                     <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400">Nhà cung cấp</th>
                                     <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400">Ngày sản xuất</th>
                                     <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400">Hạn sử dụng</th>
-                                    <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 text-center">Tỷ lệ nảy mầm</th>
-                                    <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 text-right">Số lượng</th>
-                                    <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 text-right">Thao tác</th>
+                                     <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 text-right">Số lượng</th>
+                                     <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 text-right">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={8} className="px-8 py-20 text-center text-slate-400 font-medium">Đang tải dữ liệu...</td>
+                                        <td colSpan={7} className="px-8 py-20 text-center text-slate-400 font-medium">Đang tải dữ liệu...</td>
                                     </tr>
                                 ) : filteredSeeds.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-8 py-20 text-center text-slate-400 font-medium">Không tìm thấy hạt giống nào.</td>
+                                        <td colSpan={7} className="px-8 py-20 text-center text-slate-400 font-medium">Không tìm thấy hạt giống nào.</td>
                                     </tr>
                                 ) : filteredSeeds.map((seed) => (
                                     <tr key={seed.batchInvId} className="hover:bg-slate-50/50 transition-colors group">
@@ -254,18 +276,31 @@ export default function Inventory() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className={`flex items-center gap-2 font-bold ${isExpired(seed.expiryDate) ? 'text-red-500' : 'text-slate-600'}`}>
-                                                <CalendarDaysIcon className="h-4 w-4 opacity-50" />
-                                                {seed.expiryDate}
+                                            <div className="space-y-1">
+                                                <div className={`flex items-center gap-2 font-bold ${isExpired(seed.expiryDate) ? 'text-red-500' : isNearExpiry(seed.expiryDate) ? 'text-orange-500' : 'text-slate-600'}`}>
+                                                    <CalendarDaysIcon className="h-4 w-4 opacity-50" />
+                                                    {seed.expiryDate}
+                                                </div>
+                                                {isExpired(seed.expiryDate) && (
+                                                    <span className="inline-block px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-black uppercase rounded-md border border-red-100">Đã hết hạn</span>
+                                                )}
+                                                {isNearExpiry(seed.expiryDate) && (
+                                                    <span className="inline-block px-2 py-0.5 bg-orange-50 text-orange-600 text-[10px] font-black uppercase rounded-md border border-orange-100">Sắp hết hạn</span>
+                                                )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border-4 border-slate-50 bg-white shadow-sm font-black text-slate-700 text-sm">
-                                                {seed.germinationRate}%
+                                        <td className="px-6 py-5 text-right">
+                                            <div className="space-y-1">
+                                                <p className={`font-black ${isLowStock(seed.quantity, seed.minThreshold) ? 'text-red-600' : 'text-slate-800'}`}>
+                                                    {seed.quantity} <span className="text-[10px] text-slate-400 font-bold uppercase">kg</span>
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-bold italic">
+                                                    Ngưỡng: {seed.minThreshold || 0} kg
+                                                </p>
+                                                {isLowStock(seed.quantity, seed.minThreshold) && (
+                                                    <span className="inline-block px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-black uppercase rounded-md border border-red-100">Bổ sung ngay</span>
+                                                )}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-5 text-right font-black text-slate-800">
-                                            {seed.quantity} <span className="text-[10px] text-slate-400 font-bold uppercase">kg</span>
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -385,43 +420,22 @@ export default function Inventory() {
                                         value={formData.expiryDate}
                                         onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500/20 font-bold text-slate-700"
-                                    />
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tỷ lệ nảy mầm (%)</label>
-                                    <div className="flex items-center gap-4">
-                                        <input 
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={formData.germinationRate === '' ? 0 : formData.germinationRate}
-                                            onChange={(e) => {
-                                                setFormData({...formData, germinationRate: Number(e.target.value)});
-                                            }}
-                                            className="flex-grow accent-green-600"
-                                        />
-                                        <div className="relative w-20">
-                                            <input 
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                value={formData.germinationRate}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    if (val === '') {
-                                                        setFormData({...formData, germinationRate: ''});
-                                                        return;
-                                                    }
-                                                    const num = parseInt(val);
-                                                    setFormData({...formData, germinationRate: isNaN(num) ? 0 : Math.min(100, Math.max(0, num))});
-                                                }}
-                                                className="w-full text-center font-black text-slate-700 bg-slate-50 py-2 rounded-xl border border-slate-100 focus:ring-2 focus:ring-green-500/20 outline-none"
-                                            />
-                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs">%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                     />
+                                 </div>
+                                 <div className="space-y-2 md:col-span-2">
+                                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Ngưỡng báo động (kg)</label>
+                                     <input 
+                                         required
+                                         type="number"
+                                         step="0.01"
+                                         min="0"
+                                         placeholder="Cảnh báo khi dưới mức này"
+                                         value={formData.minThreshold}
+                                         onChange={(e) => setFormData({...formData, minThreshold: Number(e.target.value)})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500/20 font-bold text-slate-700"
+                                     />
+                                 </div>
+                             </div>
 
                             <div className="pt-4 flex gap-3">
                                 <button 
@@ -450,18 +464,29 @@ interface StatCardProps {
     title: string;
     value: string;
     icon: React.ReactElement<{ className?: string }>;
-    color: 'green' | 'blue' | 'indigo';
+    color: 'green' | 'blue' | 'indigo' | 'red';
+    onClick?: () => void;
+    isActive?: boolean;
 }
 
-function StatCard({ title, value, icon, color }: StatCardProps) {
+function StatCard({ title, value, icon, color, onClick, isActive }: StatCardProps) {
     const colors = {
         green: "bg-green-50 text-green-600 border-green-100 shadow-green-50",
         blue: "bg-blue-50 text-blue-600 border-blue-100 shadow-blue-50",
         indigo: "bg-indigo-50 text-indigo-600 border-indigo-100 shadow-indigo-50",
+        red: "bg-red-50 text-red-600 border-red-100 shadow-red-50",
     };
 
     return (
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm flex items-center gap-6">
+        <div 
+            onClick={onClick}
+            className={`
+                bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm flex items-center gap-6 
+                transition-all duration-300
+                ${onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-1 active:scale-95' : ''}
+                ${isActive ? 'ring-2 ring-red-500 ring-offset-2 border-red-200' : ''}
+            `}
+        >
             <div className={`p-4 rounded-3xl ${colors[color]} border shadow-lg`}>
                 {React.cloneElement(icon, { className: "h-8 w-8 stroke-[1.5]" })}
             </div>
@@ -473,7 +498,29 @@ function StatCard({ title, value, icon, color }: StatCardProps) {
     );
 }
 
-function isExpired(dateStr: string) {
+function isExpired(dateStr: string | undefined) {
     if (!dateStr) return false;
-    return new Date(dateStr) < new Date();
+    const expiry = new Date(dateStr);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return expiry < now;
+}
+
+function isNearExpiry(dateStr: string | undefined) {
+    if (!dateStr) return false;
+    const expiry = new Date(dateStr);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
+    // Within 30 days
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(now.getDate() + 30);
+    thirtyDaysFromNow.setHours(0, 0, 0, 0);
+    
+    return expiry >= now && expiry <= thirtyDaysFromNow;
+}
+
+function isLowStock(quantity: number | '', threshold: number | undefined) {
+    if (quantity === '' || threshold === undefined || threshold <= 0) return false;
+    return quantity <= threshold;
 }

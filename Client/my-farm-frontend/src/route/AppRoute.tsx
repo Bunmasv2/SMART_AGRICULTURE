@@ -1,10 +1,11 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+import BatchDetail from '../pages/batches/BatchDetail';
+import GrowthProcessDetail from '../pages/processes/GrowthProcessDetail';
 
 const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
 const Batches = lazy(() => import('../pages/batches/BatchList'));
-const BatchCreation = lazy(() => import('../pages/batches/BatchCreation'));
 const BatchLifecycle = lazy(() => import('../pages/batches/BatchLifecycle'));
 const Processes = lazy(() => import('../pages/processes/GrowthProcess'));
 const Inventory = lazy(() => import('../pages/inventory/Inventory'));
@@ -15,6 +16,8 @@ const Settings = lazy(() => import('../pages/settings/Settings'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
+const FertilizerManagement = lazy(() => import('../pages/inventory/FertilizerManagement'));
+const PesticideManagement = lazy(() => import('../pages/inventory/PesticideManagement'));
 
 const AppRoutes = () => {
     return (
@@ -26,13 +29,16 @@ const AppRoutes = () => {
 
                         <Route path="/batches">
                             <Route index element={<Batches />} />
-                            <Route path="create" element={<BatchCreation />} />
+                            <Route path=":id" element={<BatchDetail />} />
                             <Route path="lifecycle/:id" element={<BatchLifecycle />} />
                         </Route>
 
                         <Route path="/processes" element={<Processes />} />
+                        <Route path="/processes/:id" element={<GrowthProcessDetail />} />
 
                         <Route path="/inventory" element={<Inventory />} />
+                        <Route path="/fertilizers" element={<FertilizerManagement />} />
+                        <Route path="/pesticides" element={<PesticideManagement />} />
 
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/calendar" element={<Calendar />} />

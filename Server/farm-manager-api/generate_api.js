@@ -50,16 +50,16 @@ const models = [
         name: 'Role',
         table: 'Roles',
         idName: 'roleId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'roleId', type: 'Long', isId: true },
+            { name: 'roleId', type: 'Integer', isId: true },
             { name: 'roleName', type: 'String' }
         ],
         entityAnnotations: `
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private Long roleId;
+    private Integer roleId;
 
     @Column(name = "role_name", nullable = false, length = 50, unique = true)
     private String roleName;`
@@ -68,19 +68,19 @@ const models = [
         name: 'User',
         table: 'Users',
         idName: 'userId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'userId', type: 'Long', isId: true },
+            { name: 'userId', type: 'Integer', isId: true },
             { name: 'fullName', type: 'String' },
             { name: 'email', type: 'String' },
             { name: 'passwordHash', type: 'String' },
-            { name: 'roleId', type: 'Long', isRel: true, entityRef: 'Role', entityVar: 'role' }
+            { name: 'roleId', type: 'Integer', isRel: true, entityRef: 'Role', entityVar: 'role' }
         ],
         entityAnnotations: `
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -99,9 +99,9 @@ const models = [
         name: 'Crop',
         table: 'Crops',
         idName: 'cropId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'cropId', type: 'Long', isId: true },
+            { name: 'cropId', type: 'Integer', isId: true },
             { name: 'cropName', type: 'String' },
             { name: 'variety', type: 'String' },
             { name: 'description', type: 'String' }
@@ -110,7 +110,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crop_id")
-    private Long cropId;
+    private Integer cropId;
 
     @Column(name = "crop_name", nullable = false, length = 100)
     private String cropName;
@@ -125,10 +125,10 @@ const models = [
         name: 'GrowthProcess',
         table: 'Growth_Processes',
         idName: 'processId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'processId', type: 'Long', isId: true },
-            { name: 'cropId', type: 'Long', isRel: true, entityRef: 'Crop', entityVar: 'crop' },
+            { name: 'processId', type: 'Integer', isId: true },
+            { name: 'cropId', type: 'Integer', isRel: true, entityRef: 'Crop', entityVar: 'crop' },
             { name: 'processName', type: 'String' },
             { name: 'totalDays', type: 'Integer' }
         ],
@@ -136,7 +136,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "process_id")
-    private Long processId;
+    private Integer processId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")
@@ -152,10 +152,10 @@ const models = [
         name: 'Stage',
         table: 'Stages',
         idName: 'stageId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'stageId', type: 'Long', isId: true },
-            { name: 'processId', type: 'Long', isRel: true, entityRef: 'GrowthProcess', entityVar: 'process' },
+            { name: 'stageId', type: 'Integer', isId: true },
+            { name: 'processId', type: 'Integer', isRel: true, entityRef: 'GrowthProcess', entityVar: 'process' },
             { name: 'stageName', type: 'String' },
             { name: 'startDay', type: 'Integer' },
             { name: 'endDay', type: 'Integer' }
@@ -164,7 +164,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stage_id")
-    private Long stageId;
+    private Integer stageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_id")
@@ -183,9 +183,9 @@ const models = [
         name: 'InventoryItem',
         table: 'Inventory_Items',
         idName: 'itemId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'itemId', type: 'Long', isId: true },
+            { name: 'itemId', type: 'Integer', isId: true },
             { name: 'itemName', type: 'String' },
             { name: 'category', type: 'String' },
             { name: 'unit', type: 'String' },
@@ -195,7 +195,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
-    private Long itemId;
+    private Integer itemId;
 
     @Column(name = "item_name", nullable = false, length = 100)
     private String itemName;
@@ -213,10 +213,10 @@ const models = [
         name: 'InventoryBatch',
         table: 'Inventory_Batches',
         idName: 'batchInvId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'batchInvId', type: 'Long', isId: true },
-            { name: 'itemId', type: 'Long', isRel: true, entityRef: 'InventoryItem', entityVar: 'item' },
+            { name: 'batchInvId', type: 'Integer', isId: true },
+            { name: 'itemId', type: 'Integer', isRel: true, entityRef: 'InventoryItem', entityVar: 'item' },
             { name: 'supplier', type: 'String' },
             { name: 'quantity', type: 'Double' },
             { name: 'expiryDate', type: 'LocalDate' },
@@ -226,7 +226,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "batch_inv_id")
-    private Long batchInvId;
+    private Integer batchInvId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
@@ -248,12 +248,12 @@ const models = [
         name: 'TaskTemplate',
         table: 'Task_Templates',
         idName: 'taskTmpId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'taskTmpId', type: 'Long', isId: true },
-            { name: 'stageId', type: 'Long', isRel: true, entityRef: 'Stage', entityVar: 'stage' },
+            { name: 'taskTmpId', type: 'Integer', isId: true },
+            { name: 'stageId', type: 'Integer', isRel: true, entityRef: 'Stage', entityVar: 'stage' },
             { name: 'taskName', type: 'String' },
-            { name: 'itemId', type: 'Long', isRel: true, entityRef: 'InventoryItem', entityVar: 'item' },
+            { name: 'itemId', type: 'Integer', isRel: true, entityRef: 'InventoryItem', entityVar: 'item' },
             { name: 'quantityRequired', type: 'Double' },
             { name: 'offsetDay', type: 'Integer' }
         ],
@@ -261,7 +261,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_tmp_id")
-    private Long taskTmpId;
+    private Integer taskTmpId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
@@ -284,12 +284,12 @@ const models = [
         name: 'PlantingBatch',
         table: 'Planting_Batches',
         idName: 'pBatchId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'pBatchId', type: 'Long', isId: true },
+            { name: 'pBatchId', type: 'Integer', isId: true },
             { name: 'batchName', type: 'String' },
-            { name: 'cropId', type: 'Long', isRel: true, entityRef: 'Crop', entityVar: 'crop' },
-            { name: 'processId', type: 'Long', isRel: true, entityRef: 'GrowthProcess', entityVar: 'process' },
+            { name: 'cropId', type: 'Integer', isRel: true, entityRef: 'Crop', entityVar: 'crop' },
+            { name: 'processId', type: 'Integer', isRel: true, entityRef: 'GrowthProcess', entityVar: 'process' },
             { name: 'areaM2', type: 'Double' },
             { name: 'locationCoords', type: 'String' },
             { name: 'startDate', type: 'LocalDate' },
@@ -299,7 +299,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_batch_id")
-    private Long pBatchId;
+    private Integer pBatchId;
 
     @Column(name = "batch_name", nullable = false, length = 100)
     private String batchName;
@@ -328,15 +328,15 @@ const models = [
         name: 'Task',
         table: 'Tasks',
         idName: 'taskId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'taskId', type: 'Long', isId: true },
-            { name: 'pBatchId', type: 'Long', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
-            { name: 'taskTmpId', type: 'Long', isRel: true, entityRef: 'TaskTemplate', entityVar: 'taskTemplate' },
+            { name: 'taskId', type: 'Integer', isId: true },
+            { name: 'pBatchId', type: 'Integer', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
+            { name: 'taskTmpId', type: 'Integer', isRel: true, entityRef: 'TaskTemplate', entityVar: 'taskTemplate' },
             { name: 'title', type: 'String' },
             { name: 'plannedDate', type: 'LocalDate' },
             { name: 'actualDate', type: 'LocalDate' },
-            { name: 'assignedTo', type: 'Long', isRel: true, entityRef: 'User', entityVar: 'assignedTo' },
+            { name: 'assignedTo', type: 'Integer', isRel: true, entityRef: 'User', entityVar: 'assignedTo' },
             { name: 'status', type: 'String' },
             { name: 'notes', type: 'String' }
         ],
@@ -344,7 +344,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
-    private Long taskId;
+    private Integer taskId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_batch_id")
@@ -377,10 +377,10 @@ const models = [
         name: 'AiAnalysis',
         table: 'AI_Analysis',
         idName: 'analysisId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'analysisId', type: 'Long', isId: true },
-            { name: 'pBatchId', type: 'Long', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
+            { name: 'analysisId', type: 'Integer', isId: true },
+            { name: 'pBatchId', type: 'Integer', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
             { name: 'imagePath', type: 'String' },
             { name: 'resultJson', type: 'String' },
             { name: 'createdAt', type: 'LocalDateTime' }
@@ -389,7 +389,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "analysis_id")
-    private Long analysisId;
+    private Integer analysisId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_batch_id")
@@ -408,10 +408,10 @@ const models = [
         name: 'WeatherAlert',
         table: 'Weather_Alerts',
         idName: 'alertId',
-        idType: 'Long',
+        idType: 'Integer',
         fields: [
-            { name: 'alertId', type: 'Long', isId: true },
-            { name: 'pBatchId', type: 'Long', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
+            { name: 'alertId', type: 'Integer', isId: true },
+            { name: 'pBatchId', type: 'Integer', isRel: true, entityRef: 'PlantingBatch', entityVar: 'plantingBatch' },
             { name: 'alertType', type: 'String' },
             { name: 'description', type: 'String' },
             { name: 'createdAt', type: 'LocalDateTime' }
@@ -420,7 +420,7 @@ const models = [
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "alert_id")
-    private Long alertId;
+    private Integer alertId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_batch_id")
@@ -443,7 +443,7 @@ const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 models.forEach(m => {
     const lowerName = m.name.charAt(0).toLowerCase() + m.name.slice(1);
-    
+
     // 1. Entity
     const entityCode = `package ${pkg}.entity;
 
@@ -490,7 +490,7 @@ ${dtoFields}
     let toDtoMappings = m.fields.map(f => {
         if (f.isRel) {
             return `        if (entity.get${capitalize(f.entityVar)}() != null) {
-            dto.set${capitalize(f.name)}(entity.get${capitalize(f.entityVar)}().get${capitalize(f.name.replace('Id',''))}Id());
+            dto.set${capitalize(f.name)}(entity.get${capitalize(f.entityVar)}().get${capitalize(f.name.replace('Id', ''))}Id());
         }`;
         } else {
             return `        dto.set${capitalize(f.name)}(entity.get${capitalize(f.name)}());`;
@@ -501,7 +501,7 @@ ${dtoFields}
         if (f.isRel) {
             return `        if (dto.get${capitalize(f.name)}() != null) {
             ${f.entityRef} ${f.entityVar} = new ${f.entityRef}();
-            ${f.entityVar}.set${capitalize(f.name.replace('Id',''))}Id(dto.get${capitalize(f.name)}());
+            ${f.entityVar}.set${capitalize(f.name.replace('Id', ''))}Id(dto.get${capitalize(f.name)}());
             entity.set${capitalize(f.entityVar)}(${f.entityVar});
         }`;
         } else {

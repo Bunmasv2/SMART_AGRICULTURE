@@ -1,5 +1,7 @@
 package com.smartfarm.api.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,4 +28,7 @@ public class GrowthProcess {
 
     @Column(name = "total_days", nullable = false)
     private Integer totalDays;
+
+    @OneToMany(mappedBy = "process", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Stage> stages;
 }

@@ -14,6 +14,7 @@ public class PlantingBatchMapper {
                 .pBatchId(entity.getPBatchId())
                 .batchName(entity.getBatchName())
                 .areaM2(entity.getAreaM2())
+                .cropCount(entity.getCropCount())
                 .locationCoords(entity.getLocationCoords())
                 .startDate(entity.getStartDate())
                 .status(entity.getStatus())
@@ -21,6 +22,7 @@ public class PlantingBatchMapper {
         if (entity.getCrop() != null) {
             dto.setCropId(entity.getCrop().getCropId());
             dto.setCropName(entity.getCrop().getCropName());
+            dto.setVariety(entity.getCrop().getVariety());
         }
         if (entity.getProcess() != null) {
             dto.setProcessId(entity.getProcess().getProcessId());
@@ -35,6 +37,7 @@ public class PlantingBatchMapper {
                 .pBatchId(dto.getPBatchId())
                 .batchName(dto.getBatchName())
                 .areaM2(dto.getAreaM2())
+                .cropCount(dto.getCropCount())
                 .locationCoords(dto.getLocationCoords())
                 .startDate(dto.getStartDate())
                 .status(dto.getStatus())

@@ -1,5 +1,6 @@
 package com.smartfarm.api.service;
 
+import com.smartfarm.api.dto.GrowthProcessDetailDto;
 import com.smartfarm.api.dto.GrowthProcessDto;
 import com.smartfarm.api.entity.GrowthProcess;
 import com.smartfarm.api.mapper.GrowthProcessMapper;
@@ -20,7 +21,8 @@ public class GrowthProcessService {
     private final GrowthProcessMapper growthProcessMapper;
 
     @Autowired
-    public GrowthProcessService(GrowthProcessRepository growthProcessRepository, GrowthProcessMapper growthProcessMapper) {
+    public GrowthProcessService(GrowthProcessRepository growthProcessRepository,
+            GrowthProcessMapper growthProcessMapper) {
         this.growthProcessRepository = growthProcessRepository;
         this.growthProcessMapper = growthProcessMapper;
     }
@@ -53,5 +55,20 @@ public class GrowthProcessService {
         if (!growthProcessRepository.existsById(id)) return false;
         growthProcessRepository.deleteById(id);
         return true;
+    }
+
+    public int deleteByIds(List<Integer> ids) {
+        List<GrowthProcess> processes = growthProcessRepository.findAllById(ids);
+
+        if (processes.isEmpty()) {
+            throw new RuntimeException("No GrowthProcess found with provided IDs");
+        }
+
+        growthProcessRepository.deleteAll(processes);
+        return processes.size();
+    }
+
+    public Optional<GrowthProcessDetailDto> findDetailById(Integer id) {
+        return growthProcessRepository.findById(id).map(growthProcessMapper::toDetailDto);
     }
 }

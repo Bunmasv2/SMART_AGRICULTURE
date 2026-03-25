@@ -2,6 +2,7 @@ package com.smartfarm.api.controller;
 
 import com.smartfarm.api.dto.ApiResponse;
 import com.smartfarm.api.dto.StageDto;
+import com.smartfarm.api.dto.StageSimpleDto;
 import com.smartfarm.api.service.StageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,18 @@ public class StageController {
                 .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.notFound("Stage not found with id: " + id)));
+    }
+
+    @GetMapping("/process/{processId}")
+    public ResponseEntity<ApiResponse<List<StageSimpleDto>>> getByProcessId(@PathVariable Integer processId) {
+        List<StageSimpleDto> data = stageService.findSimpleByProcessId(processId);
+
+        if (data.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound("No stages found for processId: " + processId));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(data));
     }
 
     @PostMapping
