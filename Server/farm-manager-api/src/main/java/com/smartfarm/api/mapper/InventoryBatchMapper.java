@@ -22,6 +22,10 @@ public class InventoryBatchMapper {
             dto.setItemId(entity.getItem().getItemId());
             dto.setItemName(entity.getItem().getItemName());
             dto.setMinThreshold(entity.getItem().getMinThreshold());
+            if (entity.getItem().getCrop() != null) {
+                dto.setCropId(entity.getItem().getCrop().getCropId());
+                dto.setCropName(entity.getItem().getCrop().getCropName());
+            }
         }
         return dto;
     }
@@ -38,7 +42,11 @@ public class InventoryBatchMapper {
                 .germinationRate(dto.getGerminationRate())
                 .build();
         if (dto.getItemId() != null) {
-            entity.setItem(InventoryItem.builder().itemId(dto.getItemId()).build());
+            InventoryItem item = InventoryItem.builder().itemId(dto.getItemId()).build();
+            if (dto.getCropId() != null) {
+                item.setCrop(com.smartfarm.api.entity.Crop.builder().cropId(dto.getCropId()).build());
+            }
+            entity.setItem(item);
         }
         return entity;
     }

@@ -19,4 +19,6 @@ public class InventoryBatchDto {
     private LocalDate productionDate;
     private Double germinationRate;
     private Double minThreshold;
+    private Integer cropId;
+    private String cropName;
 }

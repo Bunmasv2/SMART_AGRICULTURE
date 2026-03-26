@@ -5,6 +5,7 @@ import com.smartfarm.api.entity.InventoryBatch;
 import com.smartfarm.api.entity.InventoryItem;
 import com.smartfarm.api.entity.User;
 import com.smartfarm.api.mapper.InventoryBatchMapper;
+import com.smartfarm.api.repository.CropRepository;
 import com.smartfarm.api.repository.InventoryBatchRepository;
 import com.smartfarm.api.repository.InventoryItemRepository;
 import com.smartfarm.api.repository.UserRepository;
@@ -29,18 +30,21 @@ public class InventoryBatchService {
     private final InventoryItemRepository inventoryItemRepository;
     private final EmailService emailService;
     private final UserRepository userRepository;
+    private final CropRepository cropRepository;
 
     @Autowired
     public InventoryBatchService(InventoryBatchRepository inventoryBatchRepository, 
                                 InventoryBatchMapper inventoryBatchMapper,
                                 InventoryItemRepository inventoryItemRepository,
                                 EmailService emailService,
-                                UserRepository userRepository) {
+                                UserRepository userRepository,
+                                CropRepository cropRepository) {
         this.inventoryBatchRepository = inventoryBatchRepository;
         this.inventoryBatchMapper = inventoryBatchMapper;
         this.inventoryItemRepository = inventoryItemRepository;
         this.emailService = emailService;
         this.userRepository = userRepository;
+        this.cropRepository = cropRepository;
     }
 
     private void checkAndSendImmediateAlert(InventoryBatch batch) {
@@ -114,10 +118,18 @@ public class InventoryBatchService {
         InventoryBatch entity = inventoryBatchMapper.toEntity(dto);
         InventoryBatch saved = inventoryBatchRepository.save(entity);
         
-        // Update item threshold if provided
-        if (dto.getMinThreshold() != null && dto.getItemId() != null) {
+        // Update item details if provided
+        if (dto.getItemId() != null) {
             inventoryItemRepository.findById(dto.getItemId()).ifPresent(item -> {
-                item.setMinThreshold(dto.getMinThreshold());
+                if (dto.getMinThreshold() != null) {
+                    item.setMinThreshold(dto.getMinThreshold());
+                }
+                if (dto.getItemName() != null) {
+                    item.setItemName(dto.getItemName());
+                }
+                if (dto.getCropId() != null) {
+                    cropRepository.findById(dto.getCropId()).ifPresent(item::setCrop);
+                }
                 inventoryItemRepository.save(item);
             });
         }
@@ -133,10 +145,18 @@ public class InventoryBatchService {
             updatedEntity.setBatchInvId(id);
             InventoryBatch saved = inventoryBatchRepository.save(updatedEntity);
             
-            // Update item threshold if provided
-            if (dto.getMinThreshold() != null && dto.getItemId() != null) {
+            // Update item details if provided
+            if (dto.getItemId() != null) {
                 inventoryItemRepository.findById(dto.getItemId()).ifPresent(item -> {
-                    item.setMinThreshold(dto.getMinThreshold());
+                    if (dto.getMinThreshold() != null) {
+                        item.setMinThreshold(dto.getMinThreshold());
+                    }
+                    if (dto.getItemName() != null) {
+                        item.setItemName(dto.getItemName());
+                    }
+                    if (dto.getCropId() != null) {
+                        cropRepository.findById(dto.getCropId()).ifPresent(item::setCrop);
+                    }
                     inventoryItemRepository.save(item);
                 });
             }
