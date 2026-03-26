@@ -71,6 +71,7 @@ public class AiAnalysisController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<AiAnalysisDto>> update(@PathVariable Integer id, @RequestBody AiAnalysisDto dto) {
+
         try {
             return aiAnalysisService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "AiAnalysis updated successfully")))
