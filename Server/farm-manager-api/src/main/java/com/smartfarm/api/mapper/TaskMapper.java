@@ -1,11 +1,12 @@
 package com.smartfarm.api.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.smartfarm.api.dto.TaskDto;
 import com.smartfarm.api.entity.PlantingBatch;
 import com.smartfarm.api.entity.Task;
 import com.smartfarm.api.entity.TaskTemplate;
 import com.smartfarm.api.entity.User;
-import org.springframework.stereotype.Component;
 
 @Component
 public class TaskMapper {
@@ -37,10 +38,6 @@ public class TaskMapper {
             dto.setPBatchId(entity.getPlantingBatch().getPBatchId());
             dto.setBatchName(entity.getPlantingBatch().getBatchName());
         }
-        if (entity.getTaskTemplate() != null) {
-            dto.setTaskTmpId(entity.getTaskTemplate().getTaskTmpId());
-            dto.setTaskTemplateName(entity.getTaskTemplate().getTaskName());
-        }
         if (entity.getAssignedTo() != null) {
             dto.setAssignedToId(entity.getAssignedTo().getUserId());
             dto.setAssignedToName(entity.getAssignedTo().getFullName());
@@ -51,22 +48,27 @@ public class TaskMapper {
     public Task toEntity(TaskDto dto) {
         if (dto == null)
             return null;
-        Task entity = Task.builder()
-                .taskId(dto.getTaskId())
-                .title(dto.getTitle())
-                .plannedDate(dto.getPlannedDate())
-                .actualDate(dto.getActualDate())
-                .status(dto.getStatus())
-                .notes(dto.getNotes())
-                .build();
+        Task entity = new Task();
+        entity.setTaskId(dto.getTaskId());
+        entity.setTitle(dto.getTitle());
+        entity.setPlannedDate(dto.getPlannedDate());
+        entity.setActualDate(dto.getActualDate());
+        entity.setStatus(dto.getStatus());
+        entity.setNotes(dto.getNotes());
         if (dto.getPBatchId() != null) {
-            entity.setPlantingBatch(PlantingBatch.builder().pBatchId(dto.getPBatchId()).build());
+            PlantingBatch plantingBatch = new PlantingBatch();
+            plantingBatch.setpBatchId(dto.getPBatchId());
+            entity.setPlantingBatch(plantingBatch);
         }
         if (dto.getTaskTmpId() != null) {
-            entity.setTaskTemplate(TaskTemplate.builder().taskTmpId(dto.getTaskTmpId()).build());
+            TaskTemplate taskTemplate = new TaskTemplate();
+            taskTemplate.setTaskTmpId(dto.getTaskTmpId());
+            entity.setTaskTemplate(taskTemplate);
         }
         if (dto.getAssignedToId() != null) {
-            entity.setAssignedTo(User.builder().userId(dto.getAssignedToId()).build());
+            User assignedTo = new User();
+            assignedTo.setUserId(dto.getAssignedToId());
+            entity.setAssignedTo(assignedTo);
         }
         return entity;
     }

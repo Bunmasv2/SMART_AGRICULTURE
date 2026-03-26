@@ -9,14 +9,14 @@ export const getDaysSinceStart = (startDate: string): number => {
 
 export const getCurrentStage = (days: number, stages: WorkflowStage[]): WorkflowStage => {
     return (
-        stages.find((s) => days >= s.day_start && days <= s.day_end) ||
+        stages.find((s) => days >= s.startDay && days <= s.endDay) ||
         stages[stages.length - 1]
     );
 };
 
 export const getTotalDays = (stages: WorkflowStage[]): number => {
     if (!stages.length) return 0;
-    return stages[stages.length - 1].day_end;
+    return stages[stages.length - 1].endDay;
 };
 
 export const getExpectedDate = (startDateStr: string, totalDays: number) => {

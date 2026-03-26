@@ -11,4 +11,10 @@ public class CropDto {
     private String cropName;
     private String variety;
     private String description;
+    private Integer rainProbabilityThreshold;
+    private Double highTempThreshold;
+    private Double lowTempThreshold;
+    private Double strongWindThreshold;
+    private Integer highHumidityThreshold;
+    private Integer stormWeatherCode;
 }

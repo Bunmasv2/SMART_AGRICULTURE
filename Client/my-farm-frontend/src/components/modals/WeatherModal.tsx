@@ -53,12 +53,12 @@ export const WeatherModal = ({ isOpen, onClose, weatherData, batchName }) => {
 
     return (
         /* Overlay: Trong suốt để bắt sự kiện click ra ngoài để đóng */
-        <div 
-            className="fixed inset-0 z-[100] bg-transparent" 
+        <div
+            className="fixed inset-0 z-[100] bg-transparent"
             onClick={onClose}
         >
             {/* Modal Container: Căn lề phải, cách top một khoảng bằng Header */}
-            <div 
+            <div
                 className={`
                     absolute top-14 right-4 z-[101] 
                     w-[320px] bg-white rounded-2xl shadow-2xl border border-slate-100 

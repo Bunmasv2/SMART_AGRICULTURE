@@ -141,14 +141,19 @@ public class InventoryItemService {
     }
 
     public void createFertilizer(CreateFertilizerRequest req) {
-        Optional<InventoryItem> existing = inventoryItemRepository.findByItemNameAndCategory(req.getName(),
+
+        // 🔍 Tìm item đã tồn tại chưa
+        Optional<InventoryItem> existing = inventoryItemRepository.findByItemNameAndCategory(
+                req.getName(),
                 req.getCategory());
 
         InventoryItem item;
 
+        // ✅ Nếu có rồi thì dùng lại
         if (existing.isPresent()) {
             item = existing.get();
         } else {
+            // ✅ Nếu chưa có thì tạo mới
             item = new InventoryItem();
             item.setItemName(req.getName());
             item.setCategory(req.getCategory());
@@ -156,28 +161,31 @@ public class InventoryItemService {
             item.setMinThreshold(0.0);
 
             Crop crop = new Crop();
-            crop.setCropId(3);
+            crop.setCropId(3); // hardcode tạm
             item.setCrop(crop);
 
             item = inventoryItemRepository.save(item);
         }
 
+        // 👉 Tạo batch
         InventoryBatch batch = new InventoryBatch();
         batch.setItem(item);
         batch.setSupplier(req.getSupplier());
         batch.setQuantity(req.getQuantity());
 
+        // ✅ Expiry Date (date)
         if (req.getExpiryDate() != null && !req.getExpiryDate().isEmpty()) {
             batch.setExpiryDate(LocalDate.parse(req.getExpiryDate()));
         }
 
-        if (req.getReceivedDate() != null && !req.getReceivedDate().isEmpty()) {
-            batch.setReceivedDate(
-                    LocalDate.parse(req.getReceivedDate()).atStartOfDay());
-        }
-
+        // ✅ Production Date (date)
         if (req.getProductionDate() != null && !req.getProductionDate().isEmpty()) {
             batch.setProductionDate(LocalDate.parse(req.getProductionDate()));
+        }
+
+        // 🔥 FIX CHÍNH Ở ĐÂY (datetime)
+        if (req.getReceivedDate() != null && !req.getReceivedDate().isEmpty()) {
+            batch.setReceivedDate(LocalDateTime.parse(req.getReceivedDate()));
         }
 
         batchRepo.save(batch);

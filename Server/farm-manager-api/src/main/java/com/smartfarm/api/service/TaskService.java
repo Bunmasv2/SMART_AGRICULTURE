@@ -1,17 +1,18 @@
 package com.smartfarm.api.service;
 
-import com.smartfarm.api.dto.TaskDto;
-import com.smartfarm.api.entity.Task;
-import com.smartfarm.api.mapper.TaskMapper;
-import com.smartfarm.api.repository.TaskRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.smartfarm.api.dto.TaskDto;
+import com.smartfarm.api.dto.TaskProgressDTO;
+import com.smartfarm.api.entity.Task;
+import com.smartfarm.api.mapper.TaskMapper;
+import com.smartfarm.api.repository.TaskRepository;
 
 @Service
 @Transactional
@@ -20,7 +21,6 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
 
-    @Autowired
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -58,14 +58,18 @@ public class TaskService {
     }
 
     public Optional<TaskDto> update(Integer id, TaskDto dto) {
-        if (!taskRepository.existsById(id)) return Optional.empty();
+        if (!taskRepository.existsById(id)) {
+            return Optional.empty();
+        }
         Task entity = taskMapper.toEntity(dto);
         entity.setTaskId(id);
         return Optional.of(taskMapper.toDto(taskRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!taskRepository.existsById(id)) return false;
+        if (!taskRepository.existsById(id)) {
+            return false;
+        }
         taskRepository.deleteById(id);
         return true;
     }
@@ -73,6 +77,10 @@ public class TaskService {
     @Transactional
     public Optional<TaskDto> updateStatus(Integer id, String status) {
         return taskRepository.findById(id).map(task -> {
+            if ("COMPLETED".equalsIgnoreCase(status) && task.getPlannedDate() != null && task.getPlannedDate().isAfter(LocalDate.now())) {
+                throw new RuntimeException("Không thể hoàn thành nhiệm vụ trước thời hạn dự kiến!");
+            }
+            
             // 1. Cập nhật trạng thái mới
             task.setStatus(status);
 
@@ -91,5 +99,48 @@ public class TaskService {
             // 4. Trả về DTO
             return taskMapper.toDto(updatedTask);
         });
+    }
+
+    @Transactional
+    public TaskDto markTaskAsCompleted(Integer taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+
+        if (task.getPlannedDate() != null && task.getPlannedDate().isAfter(LocalDate.now())) {
+            throw new RuntimeException("Không thể hoàn thành nhiệm vụ trước thời hạn dự kiến!");
+        }
+
+        // Cập nhật actualDate và status
+        task.setActualDate(LocalDate.now());
+        task.setStatus("COMPLETED");
+
+        Task savedTask = taskRepository.save(task);
+        return taskMapper.toDto(savedTask);
+    }
+
+    /**
+     * Lấy thông tin tiến độ hoàn thành của một batch
+     * Trả về TaskProgressDTO với tổng task, task đã hoàn thành, % hoàn thành
+     */
+    @Transactional(readOnly = true)
+    public TaskProgressDTO getBatchProgress(Integer pBatchId) {
+        // Đếm tổng số task của batch
+        Long totalTasks = taskRepository.countByPlantingBatchPBatchId(pBatchId);
+
+        if (totalTasks == null || totalTasks == 0) {
+            throw new RuntimeException("No tasks found for batch with id: " + pBatchId);
+        }
+
+        // Đếm số task có status = 'COMPLETED'
+        Long completedTasks = taskRepository.countByPlantingBatchPBatchIdAndStatus(pBatchId, "COMPLETED");
+
+        // Tính phần trăm hoàn thành
+        double percentage = (completedTasks.doubleValue() / totalTasks.doubleValue()) * 100.0;
+
+        return TaskProgressDTO.builder()
+                .totalTasks(totalTasks.intValue())
+                .completedTasks(completedTasks.intValue())
+                .completionPercentage(Math.round(percentage * 100.0) / 100.0) // Làm tròn 2 số thập phân
+                .build();
     }
 }
