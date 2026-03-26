@@ -77,6 +77,10 @@ public class TaskService {
     @Transactional
     public Optional<TaskDto> updateStatus(Integer id, String status) {
         return taskRepository.findById(id).map(task -> {
+            if ("COMPLETED".equalsIgnoreCase(status) && task.getPlannedDate() != null && task.getPlannedDate().isAfter(LocalDate.now())) {
+                throw new RuntimeException("Không thể hoàn thành nhiệm vụ trước thời hạn dự kiến!");
+            }
+            
             // 1. Cập nhật trạng thái mới
             task.setStatus(status);
 
@@ -101,6 +105,10 @@ public class TaskService {
     public TaskDto markTaskAsCompleted(Integer taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+
+        if (task.getPlannedDate() != null && task.getPlannedDate().isAfter(LocalDate.now())) {
+            throw new RuntimeException("Không thể hoàn thành nhiệm vụ trước thời hạn dự kiến!");
+        }
 
         // Cập nhật actualDate và status
         task.setActualDate(LocalDate.now());

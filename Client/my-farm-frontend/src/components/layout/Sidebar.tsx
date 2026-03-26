@@ -8,7 +8,7 @@ import {
     Cog6ToothIcon,
     TagIcon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
@@ -19,40 +19,49 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     const location = useLocation();
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     const navigate = useNavigate()
-   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: HomeIcon },
+    const menuItems = [
+        { name: 'Dashboard', path: '/', icon: HomeIcon },
 
-    { name: 'Batches', path: '/batches', icon: MapIcon },
+        { name: 'Batches', path: '/batches', icon: MapIcon },
 
-    { name: 'Processes', path: '/processes', icon: DocumentChartBarIcon },
+        { name: 'Processes', path: '/processes', icon: DocumentChartBarIcon },
 
-    { name: 'Crops', path: '/crops', icon: TagIcon },
+        { name: 'Crops', path: '/crops', icon: TagIcon },
 
-    {
-        name: 'Inventory',
-        path: '/inventory',
-        icon: ArchiveBoxIcon,
-        children: [
-            { name: 'Seed Inventory', path: '/inventory' },
-            { name: 'Fertilizers', path: '/fertilizers' },
-            { name: 'Pesticides', path: '/pesticides' },
-        ]
-    },
+        {
+            name: 'Inventory',
+            path: '/inventory',
+            icon: ArchiveBoxIcon,
+            children: [
+                { name: 'Seed Inventory', path: '/inventory' },
+                { name: 'Fertilizers', path: '/fertilizers' },
+                { name: 'Pesticides', path: '/pesticides' },
+            ]
+        },
 
-    {
-        name: 'Tasks & Calendar',
-        path: '/tasks',
-        icon: CalendarDaysIcon,
-        children: [
-            { name: 'Tasks', path: '/tasks' },
-            { name: 'Calendar', path: '/calendar' },
-        ]
-    },
+        {
+            name: 'Tasks & Calendar',
+            path: '/tasks',
+            icon: CalendarDaysIcon,
+            children: [
+                { name: 'Tasks', path: '/tasks' },
+                { name: 'Calendar', path: '/calendar' },
+            ]
+        },
 
-    { name: 'AI Assistant', path: '/ai-assistant', icon: SparklesIcon },
+        { name: 'AI Assistant', path: '/ai-assistant', icon: SparklesIcon },
 
-    { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
-];
+        { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
+    ];
+
+    // Sync menu mở khi chuyển trang (chỉ cho phép 1 menu mở lúc nào)
+    useEffect(() => {
+        const activeParent = menuItems.find(item =>
+            item.children?.some(child => location.pathname === child.path)
+        );
+        setOpenMenu(activeParent ? activeParent.name : null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
     return (
         <aside className={`flex flex-col h-full bg-white border-r border-gray-100 ${className}`}>
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
@@ -67,7 +76,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                         (item.path !== '/' && location.pathname.startsWith(item.path)) ||
                         isChildActive;
 
-                    const isOpen = openMenu === item.name || isChildActive;
+                    const isOpen = openMenu === item.name;
 
                     return (
                         <div key={item.name}>
@@ -80,18 +89,16 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                         navigate(`/${item.path}`)
                                     }
                                 }}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
-                                    isActive
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${isActive
                                         ? 'bg-green-50 text-[#2c9b4e] font-semibold'
                                         : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e]'
-                                }`}
+                                    }`}
                             >
                                 <item.icon
-                                    className={`h-6 w-6 transition ${
-                                        isActive
+                                    className={`h-6 w-6 transition ${isActive
                                             ? 'text-[#2c9b4e]'
                                             : 'text-gray-400 group-hover:text-[#2c9b4e]'
-                                    }`}
+                                        }`}
                                 />
                                 <span>{item.name}</span>
                             </div>
@@ -99,9 +106,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                             {/* SUB MENU */}
                             {hasChildren && (
                                 <div
-                                    className={`overflow-hidden transition-all duration-300 ${
-                                        isOpen ? 'max-h-40 mt-1' : 'max-h-0'
-                                    }`}
+                                    className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-40 mt-1' : 'max-h-0'
+                                        }`}
                                 >
                                     <div className="space-y-1 border-l border-gray-200 pl-2 ml-4">
                                         {item.children.map((child) => {
@@ -111,11 +117,10 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                                 <Link
                                                     key={child.name}
                                                     to={child.path}
-                                                    className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                                                        isActive
+                                                    className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive
                                                             ? 'bg-green-100 text-[#2c9b4e] font-medium shadow-sm'
                                                             : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e] hover:translate-x-1'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {child.name}
                                                 </Link>
