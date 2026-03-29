@@ -176,18 +176,18 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
         Tải ảnh lên để phân tích
       </h3>
 
       {/* Upload Area */}
-      <div className="mb-4 w-full max-w-sm mx-auto">
+      <div className="mb-4 flex-1 min-h-0 w-full max-w-sm mx-auto">
         <div
           onClick={!previewUrl ? handleClick : undefined}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className={`relative aspect-square rounded-lg overflow-hidden ${
+          className={`relative h-full min-h-[180px] max-h-[320px] rounded-lg overflow-hidden ${
             !previewUrl
               ? 'border-2 border-dashed border-gray-300 hover:border-blue-400 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200'
               : 'border border-gray-200'
@@ -238,7 +238,7 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
         // No image - show upload button
         <button
           onClick={handleClick}
-          className="w-full py-3 px-4 rounded-lg font-medium bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-md hover:shadow-lg transition-all duration-200"
+          className="w-full py-2.5 px-4 rounded-lg font-medium bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-md hover:shadow-lg transition-all duration-200"
         >
           <Upload className="w-4 h-4 inline mr-2" />
           Chọn ảnh để phân tích
@@ -249,7 +249,7 @@ export const ImageUploadScanner = ({ onAnalyze, isScanning }: ImageUploadScanner
           <button
             onClick={handleAnalyze}
             disabled={!selectedFile || isScanning}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+            className={`w-full py-2.5 px-4 rounded-lg font-medium transition-all duration-200 ${
               !selectedFile || isScanning
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-md hover:shadow-lg'
