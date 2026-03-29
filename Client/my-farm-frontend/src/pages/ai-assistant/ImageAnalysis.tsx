@@ -7,6 +7,8 @@ import {
 import { useRef } from 'react';
 import aiAnalysisService from '../../services/aiAnalysisService';
 import { HistoryListCard } from '../../components/cards/HistoryListCard';
+import { DiseaseDetailDrawer } from '../../components/slide-overs/DiseaseDetailDrawer';
+import { saveUploadedDiseaseImage, saveUploadedHistoryImage } from '../../data/DiseaseDictionary';
 import type {
   AiAnalysisResponse,
   AnalysisHistoryItem,
@@ -208,7 +210,15 @@ const InfoStrip = ({ data, className = "" }: { data: InfoItem[]; className?: str
 );
 
 // ─── Result Section ────────────────────────────────────────────────────────
-const ResultSection = ({ result, isLoading }: { result: AiAnalysisResponse | null; isLoading: boolean }) => {
+const ResultSection = ({
+  result,
+  isLoading,
+  onOpenDetail,
+}: {
+  result: AiAnalysisResponse | null;
+  isLoading: boolean;
+  onOpenDetail: (diseaseClass: string) => void;
+}) => {
   if (isLoading) return <div className="animate-pulse space-y-4"><div className="h-20 bg-slate-50 rounded-xl" /><div className="h-32 bg-slate-50 rounded-xl" /></div>;
   if (!result) return (
     <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-100 rounded-xl text-slate-300">
@@ -240,6 +250,16 @@ const ResultSection = ({ result, isLoading }: { result: AiAnalysisResponse | nul
           <p className="text-sm text-slate-700 leading-relaxed">{result.careRecommendation}</p>
         </div>
       </div>
+
+      <div className="flex justify-end pt-2">
+        <button
+          onClick={() => onOpenDetail(result.diseaseClass)}
+          className="flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors duration-200 text-sm font-medium"
+        >
+          <Eye className="w-4 h-4" />
+          Xem chi tiết bệnh
+        </button>
+      </div>
     </div>
   );
 };
@@ -256,6 +276,10 @@ export default function ImageAnalysis() {
   const [batchOptions, setBatchOptions] = useState<PlantingBatchOption[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [isDiseaseDrawerOpen, setIsDiseaseDrawerOpen] = useState(false);
+  const [drawerDiseaseId, setDrawerDiseaseId] = useState<string | null>(null);
+  const [drawerHistoryId, setDrawerHistoryId] = useState<string | null>(null);
+  const [drawerImageOverride, setDrawerImageOverride] = useState<string | null>(null);
 
   const routeBatchId = useMemo(() => {
     if (!batchId) {
@@ -351,17 +375,43 @@ export default function ImageAnalysis() {
     setError('');
     setIsScanning(true);
     try {
+      const previousHistoryIds = new Set(historyList.map((item) => item.id));
+
       console.log('📡 Calling API...');
       // Gọi API phân tích ảnh
       const result = await aiAnalysisService.analyzeImage(file, selectedBatchId);
 
+      try {
+        await saveUploadedDiseaseImage(result.diseaseClass, file);
+      } catch (saveImageError) {
+        console.warn('Không thể lưu ảnh upload theo loại bệnh:', saveImageError);
+      }
+
       console.log('✅ Analysis successful:', result);
       // Cập nhật kết quả phân tích
       setAiResult(result);
+      setDrawerDiseaseId(result.diseaseClass);
+      setDrawerHistoryId(null);
+      setDrawerImageOverride(null);
+      setIsDiseaseDrawerOpen(false);
 
       // Refresh lịch sử sau khi phân tích thành công (vì backend vừa lưu record mới)
       try {
         const updatedHistory = await aiAnalysisService.getAnalysisHistory(selectedBatchId);
+
+        const newestHistoryItem =
+          updatedHistory.find(
+            (item) => !previousHistoryIds.has(item.id) && item.diseaseClass === result.diseaseClass
+          ) || updatedHistory.find((item) => !previousHistoryIds.has(item.id));
+
+        if (newestHistoryItem) {
+          try {
+            await saveUploadedHistoryImage(newestHistoryItem.id, file);
+          } catch (saveHistoryImageError) {
+            console.warn('Không thể lưu ảnh upload cho bản ghi lịch sử:', saveHistoryImageError);
+          }
+        }
+
         setHistoryList(updatedHistory);
 
       } catch (historyError) {
@@ -421,6 +471,10 @@ export default function ImageAnalysis() {
                   const nextBatchId = event.target.value;
                   setSelectedBatchId(nextBatchId);
                   setAiResult(null);
+                  setDrawerDiseaseId(null);
+                  setDrawerHistoryId(null);
+                  setDrawerImageOverride(null);
+                  setIsDiseaseDrawerOpen(false);
                   if (nextBatchId) {
                     navigate(`/ai-assistant/${nextBatchId}`);
                   } else {
@@ -457,18 +511,47 @@ export default function ImageAnalysis() {
               <Eye className="h-3.5 w-3.5 text-slate-400" />
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phân tích chi tiết</span>
             </div>
-            <ResultSection result={aiResult} isLoading={isScanning} />
+            <ResultSection
+              result={aiResult}
+              isLoading={isScanning}
+              onOpenDetail={(diseaseClass) => {
+                setDrawerDiseaseId(diseaseClass);
+                setDrawerHistoryId(null);
+                setDrawerImageOverride(null);
+                setIsDiseaseDrawerOpen(true);
+              }}
+            />
           </div>
 
           {/* History Area */}
           <div className="flex-1 min-h-0 px-8 pb-8 flex flex-col overflow-hidden">
             <div className="border-t border-slate-100 pt-6 h-full flex flex-col">
-              <HistoryListCard histories={historyList} isLoading={isHistoryLoading} />
+              <HistoryListCard
+                histories={historyList}
+                isLoading={isHistoryLoading}
+                onSelectHistory={(historyItem) => {
+                  if (!historyItem.diseaseClass) {
+                    return;
+                  }
+                  setDrawerDiseaseId(historyItem.diseaseClass);
+                  setDrawerHistoryId(historyItem.id);
+                  setDrawerImageOverride(historyItem.analysisImageUrl ?? null);
+                  setIsDiseaseDrawerOpen(true);
+                }}
+              />
             </div>
           </div>
         </div>
 
       </main>
+
+      <DiseaseDetailDrawer
+        isOpen={isDiseaseDrawerOpen}
+        onClose={() => setIsDiseaseDrawerOpen(false)}
+        diseaseId={drawerDiseaseId}
+        historyId={drawerHistoryId}
+        imageUrlOverride={drawerImageOverride}
+      />
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

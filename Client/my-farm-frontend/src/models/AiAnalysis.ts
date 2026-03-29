@@ -38,6 +38,7 @@ export interface AnalysisHistoryItem {
   diseaseClass: string | null;
   batchId: string;
   batchName: string;
+  analysisImageUrl?: string | null;
 }
 
 // Thông tin thời tiết (mock data - chưa có API)

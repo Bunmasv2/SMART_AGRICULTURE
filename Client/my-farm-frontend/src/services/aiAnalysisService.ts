@@ -10,6 +10,7 @@ import type {
 
 // Base URL của Spring Boot API
 const API_BASE_URL = 'http://localhost:8080/api';
+const API_ORIGIN = new URL(API_BASE_URL).origin;
 
 // Axios instance với config mặc định
 const apiClient = axios.create({
@@ -28,6 +29,27 @@ function isValidApiResponse<T>(response: unknown): response is ApiResponse<T> {
     'data' in response &&
     (response as ApiResponse<T>).data !== undefined
   );
+}
+
+function normalizeAnalysisImageUrl(imagePath: string | undefined): string | null {
+  if (!imagePath || typeof imagePath !== 'string') {
+    return null;
+  }
+
+  const trimmed = imagePath.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('/')) {
+    return `${API_ORIGIN}${trimmed}`;
+  }
+
+  return `${API_ORIGIN}/${trimmed.replace(/^\/+/, '')}`;
 }
 
 /**
@@ -285,6 +307,7 @@ function transformDtoToHistoryItem(dto: AiAnalysisDto): AnalysisHistoryItem {
     diseaseClass: diseaseClass,
     batchId: dto.pBatchId?.toString() || 'N/A',
     batchName: dto.batchName || `Lô ${dto.pBatchId || 'N/A'}`,
+    analysisImageUrl: normalizeAnalysisImageUrl(dto.imagePath),
   };
 }
 

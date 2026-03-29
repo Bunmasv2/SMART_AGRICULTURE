@@ -5,9 +5,14 @@ import { getDiseaseColorConfig } from '../../utils/AiColorUtils';
 interface HistoryListCardProps {
   histories: AnalysisHistoryItem[];
   isLoading?: boolean;
+  onSelectHistory?: (history: AnalysisHistoryItem) => void;
 }
 
-export const HistoryListCard = ({ histories, isLoading = false }: HistoryListCardProps) => {
+export const HistoryListCard = ({
+  histories,
+  isLoading = false,
+  onSelectHistory,
+}: HistoryListCardProps) => {
   const formatDate = (dateString: string): string => {
     try {
       const date = new Date(dateString);
@@ -60,11 +65,36 @@ export const HistoryListCard = ({ histories, isLoading = false }: HistoryListCar
 
             try {
               const colorConfig = getDiseaseColorConfig(item.diseaseClass);
+              const canOpenDetail = Boolean(onSelectHistory && item.diseaseClass);
+
+              const handleSelect = () => {
+                if (!canOpenDetail) {
+                  return;
+                }
+                onSelectHistory?.(item);
+              };
 
               return (
                 <div
                   key={item.id || `history-${index}`}
-                  className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200"
+                  className={`flex items-start gap-3 p-3 rounded-lg border border-gray-100 transition-all duration-200 ${
+                    canOpenDetail
+                      ? 'cursor-pointer hover:border-gray-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-emerald-200'
+                      : ''
+                  }`}
+                  onClick={canOpenDetail ? handleSelect : undefined}
+                  onKeyDown={
+                    canOpenDetail
+                      ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleSelect();
+                        }
+                      }
+                      : undefined
+                  }
+                  role={canOpenDetail ? 'button' : undefined}
+                  tabIndex={canOpenDetail ? 0 : undefined}
                 >
                   {/* Icon with color */}
                   <div className={`${colorConfig.bg} ${colorConfig.text} p-2 rounded-lg`}>
@@ -82,6 +112,9 @@ export const HistoryListCard = ({ histories, isLoading = false }: HistoryListCar
                     <p className="text-xs text-gray-400 mt-1">
                       Lô: {item.batchName || `#${item.batchId || 'N/A'}`}
                     </p>
+                    {canOpenDetail && (
+                      <p className="text-[11px] text-emerald-600 mt-1 font-medium">Nhấn để xem chi tiết</p>
+                    )}
                   </div>
                 </div>
               );
