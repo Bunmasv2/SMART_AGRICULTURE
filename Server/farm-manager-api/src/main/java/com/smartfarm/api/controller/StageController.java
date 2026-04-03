@@ -62,6 +62,10 @@ public class StageController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(stageService.create(dto), "Stage created successfully"));
+        } catch (IllegalArgumentException e) {
+            // ✅ Validation error → 400
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(400, e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));
@@ -75,6 +79,10 @@ public class StageController {
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Stage updated successfully")))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(ApiResponse.notFound("Stage not found with id: " + id)));
+        } catch (IllegalArgumentException e) {
+            // ✅ Validation error → 400
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(400, e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(500, e.getMessage()));

@@ -4,7 +4,7 @@ export const getDaysSinceStart = (startDate: string): number => {
     const start = new Date(startDate).getTime();
     const now = new Date().getTime();
     const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    return Math.max(0, diff);
+    return Math.max(1, diff);
 };
 
 export const getCurrentStage = (days: number, stages: WorkflowStage[]): WorkflowStage => {
@@ -46,4 +46,12 @@ export const getDayNumber = (targetDate: string | Date, startDate: string | Date
 
     // +1 vì ngày bắt đầu được tính là Ngày 1
     return diffDays + 1;
+};
+
+export const getTaskStartDate = (batchStartDate: string, stageStartDay: number, offset: number) => {
+    // Parse theo local time, không phải UTC
+    const [year, month, day] = batchStartDate.split('T')[0].split('-').map(Number);
+    const date = new Date(year, month - 1, day); // local time
+    date.setDate(date.getDate() + stageStartDay + offset - 1);
+    return date;
 };

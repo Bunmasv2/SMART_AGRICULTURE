@@ -45,20 +45,48 @@ public class StageService {
     }
 
     public StageDto create(StageDto dto) {
+        validateStageDays(dto.getProcessId(), dto.getStartDay(), dto.getEndDay(), null);
         Stage entity = stageMapper.toEntity(dto);
         return stageMapper.toDto(stageRepository.save(entity));
     }
 
     public Optional<StageDto> update(Integer id, StageDto dto) {
-        if (!stageRepository.existsById(id)) return Optional.empty();
+        if (!stageRepository.existsById(id))
+            return Optional.empty();
+        validateStageDays(dto.getProcessId(), dto.getStartDay(), dto.getEndDay(), id);
         Stage entity = stageMapper.toEntity(dto);
         entity.setStageId(id);
         return Optional.of(stageMapper.toDto(stageRepository.save(entity)));
     }
 
     public boolean deleteById(Integer id) {
-        if (!stageRepository.existsById(id)) return false;
+        if (!stageRepository.existsById(id))
+            return false;
         stageRepository.deleteById(id);
         return true;
+    }
+
+    private void validateStageDays(Integer processId, Integer startDay, Integer endDay, Integer excludeId) {
+        // 1. startDay phải < endDay
+        if (startDay >= endDay) {
+            throw new IllegalArgumentException("startDay phải nhỏ hơn endDay");
+        }
+
+        // 2. Lấy tất cả stage của process, bỏ qua stage đang update
+        List<Stage> existingStages = stageRepository.findByProcessProcessId(processId).stream()
+                .filter(s -> !s.getStageId().equals(excludeId))
+                .toList();
+
+        // 3. Kiểm tra overlap
+        for (Stage existing : existingStages) {
+            boolean overlaps = startDay <= existing.getEndDay() && endDay >= existing.getStartDay();
+            if (overlaps) {
+                throw new IllegalArgumentException(
+                        String.format("Khoảng ngày [%d-%d] bị trùng với giai đoạn '%s' [%d-%d]",
+                                startDay, endDay,
+                                existing.getStageName(),
+                                existing.getStartDay(), existing.getEndDay()));
+            }
+        }
     }
 }

@@ -54,8 +54,9 @@ export default function StageModal({
                 onSave(res.data.data);
             }
             onClose();
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            const message = err?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại";
+            alert(message);
         } finally {
             setLoading(false);
         }
