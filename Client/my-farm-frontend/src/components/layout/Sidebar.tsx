@@ -49,7 +49,15 @@ export default function Sidebar({ className = '' }: SidebarProps) {
             ]
         },
 
-        { name: 'AI Assistant', path: '/ai-assistant', icon: SparklesIcon },
+        {
+            name: 'AI Assistant',
+            path: '/ai-assistant',
+            icon: SparklesIcon,
+            children: [
+                { name: "Worker's Images", path: '/ai-assistant/worker-images' },
+                { name: 'Analyze Symptoms', path: '/ai-assistant/analyze-symptoms' },
+            ],
+        },
 
         { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
     ];
@@ -86,7 +94,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                     if (hasChildren) {
                                         setOpenMenu(isOpen ? null : item.name);
                                     } else {
-                                        navigate(`/${item.path}`)
+                                        navigate(item.path)
                                     }
                                 }}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${isActive

@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface Props {
@@ -47,7 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
           >
             Refresh trang
           </button>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <details className="mt-3">
               <summary className="text-xs text-red-500 cursor-pointer">Chi tiết lỗi (dev mode)</summary>
               <pre className="text-xs text-red-500 mt-2 whitespace-pre-wrap">

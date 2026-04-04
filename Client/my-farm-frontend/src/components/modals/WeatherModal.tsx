@@ -1,5 +1,5 @@
 import {
-    X, Thermometer, Droplets, Wind, CloudRain,
+    X, Droplets, Wind, CloudRain,
     MapPin, Navigation, Percent,
     HelpCircle,
     Sun,
@@ -10,6 +10,28 @@ import {
     CloudSnow,
     CloudLightning
 } from 'lucide-react';
+import type { ReactNode } from 'react';
+
+interface WeatherCurrentData {
+    temperature_2m: number;
+    weathercode?: number;
+    relative_humidity_2m: number;
+    windspeed_10m: number;
+    precipitation_probability: number;
+    precipitation: number;
+}
+
+export interface WeatherModalData {
+    current: WeatherCurrentData;
+    locationCoords?: string;
+}
+
+interface WeatherModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    weatherData: WeatherModalData;
+    batchName: string;
+}
 
 const getWeatherVisuals = (code: number | undefined) => {
     if (code === undefined) return { Icon: HelpCircle, color: 'text-slate-400' };
@@ -45,7 +67,7 @@ function weatherCodeToText(code: number | undefined): string {
     return 'Giông bão';
 }
 
-export const WeatherModal = ({ isOpen, onClose, weatherData, batchName }) => {
+export const WeatherModal = ({ isOpen, onClose, weatherData, batchName }: WeatherModalProps) => {
     if (!isOpen) return null;
 
     const { current } = weatherData;
@@ -150,7 +172,7 @@ export const WeatherModal = ({ isOpen, onClose, weatherData, batchName }) => {
     );
 };
 // Sub-component cho các mục chi tiết
-const DetailItem = ({ icon, label, value }) => (
+const DetailItem = ({ icon, label, value }: { icon: ReactNode; label: string; value: string }) => (
     <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-slate-200 transition-all group">
         <div className="flex items-center gap-2 mb-1">
             {icon}

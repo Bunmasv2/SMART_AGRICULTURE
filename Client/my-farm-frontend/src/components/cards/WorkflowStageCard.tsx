@@ -1,13 +1,10 @@
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import type { TaskDto, WorkflowStage } from '../../models/Task';
 import { STAGE_CONFIG } from '../../utils/IconUtils';
-import { getTaskStartDate } from '../../utils/DataUitls';
 
 type WorkflowStageProps = {
     stage: WorkflowStage;
     tasks: TaskDto[];
-    batchStartDate: string;
-    currentDay: number;
     isExpanded: boolean;
     onToggle: () => void;
     onTaskStatusChange: (taskId: number, currentStatus: string) => void;
@@ -18,8 +15,6 @@ type WorkflowStageProps = {
 export default function WorkflowStageCard({
     stage,
     tasks,
-    batchStartDate,
-    currentDay,
     isExpanded,
     onToggle,
     onTaskStatusChange,
@@ -31,7 +26,6 @@ export default function WorkflowStageCard({
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
-    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     // 🎨 STYLE STAGE
     const containerStyle =

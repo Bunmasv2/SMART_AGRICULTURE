@@ -3,6 +3,8 @@ package com.smartfarm.api.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,16 +14,33 @@ import com.smartfarm.api.entity.AiAnalysis;
 
 @Repository
 public interface AiAnalysisRepository extends JpaRepository<AiAnalysis, Integer> {
-    /**
-     * Tìm tất cả AiAnalysis theo pBatchId, sắp xếp theo ngày tạo giảm dần (mới nhất trước)
-     */
-    @Query("SELECT a FROM AiAnalysis a WHERE a.plantingBatch.pBatchId = :pBatchId ORDER BY a.createdAt DESC")
-    List<AiAnalysis> findByPlantingBatchPBatchId(@Param("pBatchId") Integer pBatchId);
+    @Query("SELECT a FROM AiAnalysis a LEFT JOIN a.plantingBatch p WHERE p.pBatchId = :pBatchId")
+    
+    Page<AiAnalysis> findByPlantingBatchPBatchId(@Param("pBatchId") Integer pBatchId, Pageable pageable);
 
-    /**
-     * Tìm bản ghi AiAnalysis mới nhất của một batch
-     * (Sắp xếp theo createdAt giảm dần, lấy 1 bản ghi đầu tiên)
-     */
-    @Query("SELECT a FROM AiAnalysis a WHERE a.plantingBatch.pBatchId = :pBatchId ORDER BY a.createdAt DESC LIMIT 1")
-    Optional<AiAnalysis> findLatestByBatchId(@Param("pBatchId") Integer pBatchId);
+    @Query("""
+        SELECT a
+        FROM AiAnalysis a
+        LEFT JOIN a.plantingBatch p
+        WHERE p.pBatchId = :pBatchId
+        ORDER BY a.createdAt DESC, a.analysisId DESC
+        """)
+    List<AiAnalysis> findByPlantingBatchPBatchIdOrderByCreatedAtDesc(@Param("pBatchId") Integer pBatchId);
+
+    @Query("""
+        SELECT a
+        FROM AiAnalysis a
+        LEFT JOIN a.plantingBatch p
+        WHERE p.pBatchId = :pBatchId
+        ORDER BY a.createdAt ASC, a.analysisId ASC
+        """)
+    List<AiAnalysis> findByPlantingBatchPBatchIdOrderByCreatedAtAsc(@Param("pBatchId") Integer pBatchId);
+
+    default List<AiAnalysis> findByPlantingBatchPBatchId(Integer pBatchId) {
+        return findByPlantingBatchPBatchIdOrderByCreatedAtDesc(pBatchId);
+    }
+
+    default Optional<AiAnalysis> findLatestByBatchId(Integer pBatchId) {
+        return findByPlantingBatchPBatchIdOrderByCreatedAtDesc(pBatchId).stream().findFirst();
+    }
 }

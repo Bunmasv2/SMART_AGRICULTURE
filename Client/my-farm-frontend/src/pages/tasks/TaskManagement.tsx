@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CheckCircleIcon, CalendarDaysIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as SolidCheck } from '@heroicons/react/24/solid';
@@ -64,6 +64,11 @@ export default function TaskManagement() {
     const completedTasks = tasks.filter(t => t.status === 'COMPLETED' && t.actualDate === todayStr)
         .sort((a, b) => new Date(b.actualDate!).getTime() - new Date(a.actualDate!).getTime());
 
+    const tabs: Array<{ id: 'workflow' | 'history'; label: string; count: number }> = [
+        { id: 'workflow', label: 'CÔNG VIỆC TRONG NGÀY', count: pendingTasks.length },
+        { id: 'history', label: 'NHẬT KÝ HÔM NAY', count: completedTasks.length },
+    ];
+
     return (
         <div className="flex flex-col h-screen bg-[#f8faf7] overflow-hidden w-full">
             {/* Header */}
@@ -79,13 +84,10 @@ export default function TaskManagement() {
 
             {/* Tabs Navigation (User Requested Layout) */}
             <div className="sticky top-0 z-10 bg-white border-b border-slate-100 flex w-full px-8 gap-8 shrink-0 shadow-sm">
-                {[
-                    { id: 'workflow', label: 'CÔNG VIỆC TRONG NGÀY', count: pendingTasks.length },
-                    { id: 'history', label: 'NHẬT KÝ HÔM NAY', count: completedTasks.length },
-                ].map(tab => (
+                {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id)}
                         className={`py-5 text-[11px] font-black tracking-widest uppercase transition-all relative
                             ${activeTab === tab.id ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                     >

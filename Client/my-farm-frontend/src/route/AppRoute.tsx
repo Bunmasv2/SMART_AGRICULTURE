@@ -13,7 +13,8 @@ const Inventory = lazy(() => import('../pages/inventory/Inventory'));
 const Crops = lazy(() => import('../pages/crops/CropList'));
 const Tasks = lazy(() => import('../pages/tasks/TaskManagement'));
 const Calendar = lazy(() => import('../pages/tasks/FarmingCalendar'));
-const AIAssistant = lazy(() => import('../pages/ai-assistant/ImageAnalysis'));
+const WorkerImagesPage = lazy(() => import('../pages/ai-assistant/WorkerImagesPage'));
+const AnalyzeSymptomsPage = lazy(() => import('../pages/ai-assistant/AnalyzeSymptomsPage'));
 const Settings = lazy(() => import('../pages/settings/Settings'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
@@ -49,8 +50,10 @@ const AppRoutes = () => {
                             <Route path="/tasks" element={<Tasks />} />
                             <Route path="/calendar" element={<Calendar />} />
 
-                            <Route path="/ai-assistant" element={<AIAssistant />} />
-                            <Route path="/ai-assistant/:batchId" element={<AIAssistant />} />
+                            <Route path="/ai-assistant" element={<Navigate to="/ai-assistant/worker-images" replace />} />
+                            <Route path="/ai-assistant/worker-images" element={<WorkerImagesPage />} />
+                            <Route path="/ai-assistant/analyze-symptoms" element={<AnalyzeSymptomsPage />} />
+                            <Route path="/ai-assistant/:batchId" element={<Navigate to="/ai-assistant/worker-images" replace />} />
 
                             <Route path="/settings" element={<Settings />} />
                         </Route>

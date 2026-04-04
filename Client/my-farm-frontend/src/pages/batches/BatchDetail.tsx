@@ -16,7 +16,12 @@ import {
     Sun, Cloud, CloudFog, CloudDrizzle, CloudRain,
     Snowflake, CloudSnow, CloudLightning, HelpCircle
 } from 'lucide-react';
-import { WeatherModal } from '../../components/modals/WeatherModal';
+import { WeatherModal, type WeatherModalData } from '../../components/modals/WeatherModal';
+
+interface BatchWeatherPayload {
+    batchName: string;
+    weather: WeatherModalData;
+}
 
 const BATCH_LOGS: BatchLog[] = [
     { log_id: 1, event_type: "STATUS_CHANGE", content: "Lô được khởi tạo, bắt đầu giai đoạn chuẩn bị đất.", created_at: "2025-12-15 08:00", created_by: "Nguyễn Văn Kiệt", image_url: null },
@@ -53,14 +58,14 @@ const getWeatherVisuals = (code: number | undefined) => {
 }
 
 export default function BatchDetail() {
-    const [batch, setBatch] = useState<Batch | null>()
-    const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>()
-    const [stages, setStages] = useState<WorkflowStage[]>()
+    const [batch, setBatch] = useState<Batch | null>(null)
+    const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>(null)
+    const [stages, setStages] = useState<WorkflowStage[]>([])
     const [tasks, setTasks] = useState<TaskDto[]>([]);
     const [activeTab, setActiveTab] = useState('workflow');
     const [expandedStage, setExpandedStage] = useState<number | null>(3);
     const [showWeatherModal, setShowWeatherModal] = useState(false);
-    const [weather, setWeather] = useState()
+    const [weather, setWeather] = useState<BatchWeatherPayload | null>(null)
     const { id } = useParams()
     const navigate = useNavigate()
     const [taskErrors, setTaskErrors] = useState<Record<number, string>>({});
@@ -154,13 +159,13 @@ export default function BatchDetail() {
         }
     };
 
-    if (!growthProcess || !batch || !stages) return
+    if (!growthProcess || !batch || stages.length === 0) return null
 
     const currentDay = getDaysSinceStart(batch.startDate);
     const currentStage = getCurrentStage(currentDay, stages);
     const progressPct = Math.min(100, Math.round((currentDay / (stages[stages.length - 1].endDay)) * 100));
     const statusColor = STATUS_COLOR[batch.status as keyof typeof STATUS_COLOR] || '#94a3b8';
-    const { Icon: WeatherIcon, color: weatherColor } = getWeatherVisuals(1);
+    const { Icon: WeatherIcon, color: weatherColor } = getWeatherVisuals(weather?.weather?.current?.weathercode);
 
     return (
         <div key={id} className="min-h-screen bg-white font-['Be_Vietnam_Pro',_sans-serif] flex flex-col overflow-x-hidden">
@@ -292,8 +297,6 @@ export default function BatchDetail() {
                                             key={stage.stageId}
                                             stage={stage}
                                             tasks={stageTasks}
-                                            batchStartDate={batch.startDate}
-                                            currentDay={currentDay}
                                             isExpanded={expandedStage === stage.stageId}
                                             onToggle={() =>
                                                 setExpandedStage(
