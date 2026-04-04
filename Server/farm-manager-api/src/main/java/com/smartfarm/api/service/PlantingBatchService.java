@@ -72,17 +72,21 @@ public class PlantingBatchService {
                 LocalDate batchStartDate = savedBatch.getStartDate();
 
                 for (TaskTemplate template : templates) {
-                    // Tính toán ngày dự kiến: Ngày bắt đầu lô + Số ngày bù
                     int offsetDays = (template.getOffsetDay() != null) ? template.getOffsetDay() : 0;
-                    LocalDate plannedDate = batchStartDate.plusDays(offsetDays);
 
-                    // Tạo Task mới từ Template
+                    // ✅ FIX: Cộng thêm startDay của Stage
+                    int stageStartDay = (template.getStage() != null) ? template.getStage().getStartDay() : 0;
+
+                    // Công thức: batchStart + (stageStartDay - 1) + offsetDay
+                    // -1 vì stageStartDay = 1 tương ứng ngày đầu tiên (không cộng thêm gì)
+                    LocalDate plannedDate = batchStartDate.plusDays(stageStartDay - 1 + offsetDays);
+
                     Task newTask = Task.builder()
                             .plantingBatch(savedBatch)
                             .taskTemplate(template)
                             .title(template.getTaskName())
                             .plannedDate(plannedDate)
-                            .status("PENDING") // Trạng thái ban đầu của Task
+                            .status("PENDING")
                             .build();
 
                     tasksToCreate.add(newTask);

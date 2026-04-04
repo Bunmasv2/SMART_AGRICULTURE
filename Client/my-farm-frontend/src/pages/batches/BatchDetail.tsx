@@ -52,24 +52,6 @@ const getWeatherVisuals = (code: number | undefined) => {
     return { Icon: CloudLightning, color: 'text-yellow-600' };
 }
 
-function weatherCodeToText(code: number | undefined): string {
-    if (code === undefined) return 'Không xác định';
-    if (code === 0) return 'Trời quang';
-    if (code <= 3) return 'Nhiều mây';
-    if (code <= 9) return 'Sương mù nhẹ';
-    if (code <= 19) return 'Mưa phùn';
-    if (code <= 29) return 'Mưa rào';
-    if (code <= 39) return 'Tuyết';
-    if (code <= 49) return 'Sương mù';
-    if (code <= 59) return 'Mưa phùn';
-    if (code <= 69) return 'Mưa vừa đến to';
-    if (code <= 79) return 'Tuyết';
-    if (code <= 84) return 'Mưa rào';
-    if (code <= 94) return 'Tuyết rào';
-    return 'Giông bão';
-}
-
-
 export default function BatchDetail() {
     const [batch, setBatch] = useState<Batch | null>()
     const [growthProcess, setGrowthProcess] = useState<GrowthProcessBase | null>()
@@ -81,12 +63,14 @@ export default function BatchDetail() {
     const [weather, setWeather] = useState()
     const { id } = useParams()
     const navigate = useNavigate()
+    const [taskErrors, setTaskErrors] = useState<Record<number, string>>({});
 
     useEffect(() => {
         const fetchBatchDetail = async () => {
             try {
                 const reponse = await axios.get(`http://localhost:8080/api/planting-batches/${id}`)
                 setBatch(reponse.data.data)
+                console.log(reponse.data.data)
             } catch (error) {
                 console.log(error)
             }
@@ -145,12 +129,28 @@ export default function BatchDetail() {
 
     const handleToggleTask = async (taskId: number, currentStatus: string) => {
         const newStatus = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+
         try {
             await axios.patch(`http://localhost:8080/api/tasks/${taskId}/status?status=${newStatus}`);
-            // Cập nhật local state để UI thay đổi ngay lập tức
-            setTasks(prev => prev.map(t => t.taskId === taskId ? { ...t, status: newStatus } : t));
-        } catch (error) {
-            console.log(error)
+
+            // clear lỗi nếu thành công
+            setTaskErrors(prev => ({ ...prev, [taskId]: '' }));
+
+            // update UI
+            setTasks(prev =>
+                prev.map(t => t.taskId === taskId ? { ...t, status: newStatus } : t)
+            );
+
+        } catch (error: any) {
+            const message =
+                error?.response?.data?.message ||
+                "Không thể cập nhật trạng thái";
+
+            // lưu lỗi theo task
+            setTaskErrors(prev => ({
+                ...prev,
+                [taskId]: message
+            }));
         }
     };
 
@@ -269,19 +269,40 @@ export default function BatchDetail() {
                         <div className="space-y-4">
                             <div className="space-y-3">
                                 {stages.map(stage => {
-                                    // Lọc các task thuộc stage này (Dựa vào logic ngày)
                                     const stageTasks = tasks.filter(task => task.stageId === stage.stageId);
+
+                                    // 🔥 tính status stage
+                                    const total = stageTasks.length;
+                                    const done = stageTasks.filter(t => t.status === 'COMPLETED').length;
+
+                                    let stageStatus = 'PENDING';
+
+                                    if (done === total && total > 0) {
+                                        stageStatus = 'DONE';
+                                    } else if (currentDay < stage.startDay) {
+                                        stageStatus = 'SOON';
+                                    } else if (currentDay >= stage.startDay && currentDay <= stage.endDay) {
+                                        stageStatus = 'TODAY';
+                                    } else if (currentDay > stage.endDay && done < total) {
+                                        stageStatus = 'LATE';
+                                    }
 
                                     return (
                                         <WorkflowStageCard
                                             key={stage.stageId}
                                             stage={stage}
-                                            tasks={stageTasks} // Truyền list task đã lọc
+                                            tasks={stageTasks}
                                             batchStartDate={batch.startDate}
                                             currentDay={currentDay}
                                             isExpanded={expandedStage === stage.stageId}
-                                            onToggle={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
-                                            onTaskStatusChange={handleToggleTask} // Hàm gọi API update status
+                                            onToggle={() =>
+                                                setExpandedStage(
+                                                    expandedStage === stage.stageId ? null : stage.stageId
+                                                )
+                                            }
+                                            onTaskStatusChange={handleToggleTask}
+                                            taskErrors={taskErrors}
+                                            stageStatus={stageStatus} // ✅ thêm
                                         />
                                     );
                                 })}

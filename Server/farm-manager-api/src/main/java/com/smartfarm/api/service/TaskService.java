@@ -76,28 +76,26 @@ public class TaskService {
 
     @Transactional
     public Optional<TaskDto> updateStatus(Integer id, String status) {
-        return taskRepository.findById(id).map(task -> {
-            if ("COMPLETED".equalsIgnoreCase(status) && task.getPlannedDate() != null && task.getPlannedDate().isAfter(LocalDate.now())) {
-                throw new RuntimeException("Không thể hoàn thành nhiệm vụ trước thời hạn dự kiến!");
-            }
-            
-            // 1. Cập nhật trạng thái mới
-            task.setStatus(status);
+        return taskRepository.findById(id).flatMap(task -> {
 
-            // 2. Logic tự động:
+            LocalDate today = LocalDate.now();
+
+            // ❗ Không đúng ngày → chặn update
+            if (!today.equals(task.getPlannedDate())) {
+                return Optional.empty(); // ✅ đúng
+            }
+
+            task.setStatus(status.toUpperCase());
+
             if ("COMPLETED".equalsIgnoreCase(status)) {
-                // Nếu hoàn thành, ghi nhận ngày thực tế là hôm nay
-                task.setActualDate(LocalDate.now());
+                task.setActualDate(today);
             } else {
-                // Nếu chuyển về PENDING/IN_PROGRESS, xóa ngày thực tế đã ghi nhận trước đó
                 task.setActualDate(null);
             }
 
-            // 3. Lưu vào DB
             Task updatedTask = taskRepository.save(task);
 
-            // 4. Trả về DTO
-            return taskMapper.toDto(updatedTask);
+            return Optional.of(taskMapper.toDto(updatedTask));
         });
     }
 

@@ -1,6 +1,7 @@
 package com.smartfarm.api.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,13 +67,14 @@ public class TaskController {
             @PathVariable Integer id,
             @RequestParam String status) {
 
-        // Chuyển đổi status sang viết hoa để đồng nhất dữ liệu
-        String upperStatus = status.toUpperCase();
+        Optional<TaskDto> result = taskService.updateStatus(id, status);
 
-        return taskService.updateStatus(id, upperStatus)
-                .map(data -> ResponseEntity.ok(ApiResponse.success(data)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.notFound("Không tìm thấy công việc với ID: " + id)));
+        if (result.isPresent()) {
+            return ResponseEntity.ok(ApiResponse.success(result.get()));
+        }
+
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(400, "Chỉ được cập nhật vào đúng ngày thực hiện"));
     }
 
     @GetMapping("/{id}")
