@@ -4,6 +4,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface Fertilizer {
     id: number;
+    itemId: number;
     name: string;
     unit: string;
     supplier: string;
@@ -19,9 +20,11 @@ interface Props {
     onSuccess: () => void;
     category: string;
     initialData?: Fertilizer | null;
+    onSuccessWithData?: (item: Fertilizer) => void;
 }
 
 interface FormData {
+    itemId?: number;
     name: string;
     unit: string;
     supplier: string;
@@ -37,6 +40,7 @@ export default function AddFertilizerModal({
     onSuccess,
     category,
     initialData,
+    onSuccessWithData,
 }: Props) {
     const [loading, setLoading] = useState(false);
 
@@ -48,11 +52,13 @@ export default function AddFertilizerModal({
         receivedDate: "",
         productionDate: "",
         expiryDate: "",
+        itemId: 0,
     });
 
     useEffect(() => {
         if (initialData) {
             setFormData({
+                itemId: initialData.itemId,
                 name: initialData.name || "",
                 unit: initialData.unit || "kg",
                 supplier: initialData.supplier || "",
@@ -63,6 +69,7 @@ export default function AddFertilizerModal({
             });
         } else {
             setFormData({
+                itemId: 0,
                 name: "",
                 unit: "kg",
                 supplier: "",
@@ -75,22 +82,67 @@ export default function AddFertilizerModal({
     }, [initialData]);
 
     if (!isOpen) return null;
+    // const handleSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+
+    //     try {
+    //         setLoading(true);
+
+    //         if (initialData) {
+    //             await axios.put(`/inventory-items/batches/${initialData.id}`, {
+    //                 ...formData,
+    //                 category,
+    //             });
+    //         } else {
+    //             await axios.post("/inventory-items/add", {
+    //                 ...formData,
+    //                 category,
+    //             });
+    //         }
+
+    //         onSuccess();
+    //         onClose();
+    //     } catch (err) {
+    //         console.error(err);
+    //         alert("Lỗi khi lưu dữ liệu!");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
             setLoading(true);
 
+            let res;
+
             if (initialData) {
-                await axios.put(`/inventory-items/batches/${initialData.id}`, {
+                res = await axios.put(`/inventory-items/batches/${initialData.id}`, {
                     ...formData,
                     category,
                 });
+                console.log("PUT response:", res.data); // Debug log
             } else {
-                await axios.post("/inventory-items/add", {
+                res = await axios.post("/inventory-items/add", {
                     ...formData,
                     category,
                 });
+                console.log("POST response:", res.data); // Debug log
+            }
+
+            // if (onSuccessWithData) {
+            //     console.log("Response data:", res.data); // Debug log
+            //     console.log("Item data:", res.data.data); // Debug log
+            //     onSuccessWithData(res.data);
+            // }
+            if (onSuccessWithData) {
+                // Merge dữ liệu từ API với itemId hiện tại nếu API trả về thiếu
+                const savedItem = {
+                    ...res.data.data,
+                    itemId: res.data.data?.itemId || formData.itemId || initialData?.itemId
+                };
+                onSuccessWithData(savedItem);
             }
 
             onSuccess();
@@ -102,7 +154,6 @@ export default function AddFertilizerModal({
             setLoading(false);
         }
     };
-
     const getNowDateTimeLocal = () => {
         const d = new Date();
         const year = d.getFullYear();

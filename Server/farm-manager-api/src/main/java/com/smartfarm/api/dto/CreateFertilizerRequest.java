@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class CreateFertilizerRequest {
+    private Integer itemId;
     private String name;
     private String unit;
     private String supplier;

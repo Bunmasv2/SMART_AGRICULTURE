@@ -94,7 +94,7 @@ public class InventoryItemService {
 
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", batch.getBatchInvId());
-                // map.put("itemId", item.getItemId());
+                map.put("itemId", item.getItemId());
                 map.put("name", item.getItemName());
                 map.put("unit", item.getUnit());
 
@@ -123,7 +123,7 @@ public class InventoryItemService {
 
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", batch.getBatchInvId());
-                // map.put("id", item.getItemId());
+                map.put("itemId", item.getItemId());
                 map.put("name", item.getItemName());
                 map.put("unit", item.getUnit());
 
@@ -140,8 +140,7 @@ public class InventoryItemService {
         return result;
     }
 
-    public void createFertilizer(CreateFertilizerRequest req) {
-
+    public Map<String, Object> createFertilizer(CreateFertilizerRequest req) {
         // 🔍 Tìm item đã tồn tại chưa
         Optional<InventoryItem> existing = inventoryItemRepository.findByItemNameAndCategory(
                 req.getName(),
@@ -189,6 +188,17 @@ public class InventoryItemService {
         }
 
         batchRepo.save(batch);
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", batch.getBatchInvId());
+        result.put("itemId", item.getItemId()); // 🔥 QUAN TRỌNG
+        result.put("name", item.getItemName());
+        result.put("unit", item.getUnit());
+        result.put("supplier", batch.getSupplier());
+        result.put("quantity", batch.getQuantity());
+        result.put("receivedDate", batch.getReceivedDate());
+        result.put("expiryDate", batch.getExpiryDate());
+        result.put("productionDate", batch.getProductionDate());
+        return result;
     }
 
     @Transactional

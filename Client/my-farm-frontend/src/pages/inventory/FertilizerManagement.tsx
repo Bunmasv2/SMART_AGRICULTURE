@@ -13,11 +13,13 @@ import {
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import ContractModal from "./ContractModal";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Fertilizer {
     id: number;
+    itemId: number;
     name: string;
     unit: string;
     supplier: string;
@@ -33,6 +35,7 @@ export default function FertilizerManagement() {
     const [searchTerm, setSearchTerm] = useState("");
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Fertilizer | null>(null);
+    const [contractItem, setContractItem] = useState<Fertilizer | null>(null);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -244,10 +247,20 @@ export default function FertilizerManagement() {
                             setEditing(null);
                         }}
                         onSuccess={fetchData}
+                        onSuccessWithData={(item) => {
+                            setContractItem(item); // ✅ đúng chỗ
+                        }}
                         category="Fertilizer"
                         initialData={editing}
                     />
+                    {contractItem && (
+                        <ContractModal
+                            item={contractItem}
+                            onClose={() => setContractItem(null)}
+                        />
+                    )}
                 </div>
+
 
                 {/* GRID */}
                 <div className="ag-theme-alpine rounded-2xl overflow-hidden shadow" style={{ height: 500 }}>

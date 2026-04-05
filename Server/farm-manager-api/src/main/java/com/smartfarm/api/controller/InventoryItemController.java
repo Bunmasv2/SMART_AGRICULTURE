@@ -31,10 +31,19 @@ public class InventoryItemController {
         return inventoryItemService.getAllPesticides();
     }
 
+    // @PostMapping("/add")
+    // public String create(@RequestBody CreateFertilizerRequest request) {
+    // inventoryItemService.createFertilizer(request);
+    // return "success";
+    // }
+
     @PostMapping("/add")
-    public String create(@RequestBody CreateFertilizerRequest request) {
-        inventoryItemService.createFertilizer(request);
-        return "success";
+    public ResponseEntity<ApiResponse<?>> create(@RequestBody CreateFertilizerRequest request) {
+
+        Map<String, Object> item = inventoryItemService.createFertilizer(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(item, "Created successfully"));
     }
 
     @PutMapping("/batches/{id}")
