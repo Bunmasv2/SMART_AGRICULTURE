@@ -88,6 +88,8 @@ public class AuthController {
                                 .userId(user.getUserId())
                                 .fullName(user.getFullName())
                                 .email(user.getEmail())
+                                .roleId(user.getRole() != null ? user.getRole().getRoleId() : null)
+                                .roleName(user.getRole() != null ? user.getRole().getRoleName() : null)
                                 .build();
                         return ResponseEntity.ok(ApiResponse.success(dto, "Đăng nhập thành công"));
                     }

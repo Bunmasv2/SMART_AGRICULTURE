@@ -6,7 +6,8 @@ import {
     CalendarDaysIcon,
     SparklesIcon,
     Cog6ToothIcon,
-    TagIcon
+    TagIcon,
+    UsersIcon
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -19,6 +20,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     const location = useLocation();
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     const navigate = useNavigate()
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const menuItems = [
         { name: 'Dashboard', path: '/', icon: HomeIcon },
 
@@ -50,6 +52,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         },
 
         { name: 'AI Assistant', path: '/ai-assistant', icon: SparklesIcon },
+
+        ...(user.roleId <= 2 ? [{ name: 'User Management', path: '/admin/users', icon: UsersIcon }] : []),
 
         { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
     ];
@@ -90,14 +94,14 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                     }
                                 }}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${isActive
-                                        ? 'bg-green-50 text-[#2c9b4e] font-semibold'
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e]'
+                                    ? 'bg-green-50 text-[#2c9b4e] font-semibold'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e]'
                                     }`}
                             >
                                 <item.icon
                                     className={`h-6 w-6 transition ${isActive
-                                            ? 'text-[#2c9b4e]'
-                                            : 'text-gray-400 group-hover:text-[#2c9b4e]'
+                                        ? 'text-[#2c9b4e]'
+                                        : 'text-gray-400 group-hover:text-[#2c9b4e]'
                                         }`}
                                 />
                                 <span>{item.name}</span>
@@ -118,8 +122,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                                     key={child.name}
                                                     to={child.path}
                                                     className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive
-                                                            ? 'bg-green-100 text-[#2c9b4e] font-medium shadow-sm'
-                                                            : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e] hover:translate-x-1'
+                                                        ? 'bg-green-100 text-[#2c9b4e] font-medium shadow-sm'
+                                                        : 'text-gray-500 hover:bg-gray-50 hover:text-[#2c9b4e] hover:translate-x-1'
                                                         }`}
                                                 >
                                                     {child.name}

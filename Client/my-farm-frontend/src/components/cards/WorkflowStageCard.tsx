@@ -134,12 +134,13 @@ export default function WorkflowStageCard({
                                 <button
                                     onClick={() => onTaskStatusChange(task.taskId, task.status)}
                                     className="flex-shrink-0"
+                                    disabled={JSON.parse(localStorage.getItem('user') || '{}').roleId <= 2}
                                 >
                                     {isTaskDone ? (
                                         <CheckCircleSolid className="h-4 w-4 text-emerald-500" />
                                     ) : (
                                         <div className={`h-4 w-4 rounded-full border ${isOverdue ? 'border-red-400 bg-red-50' : 'border-slate-300'
-                                            }`} />
+                                            } ${JSON.parse(localStorage.getItem('user') || '{}').roleId <= 2 ? 'opacity-50 cursor-not-allowed' : ''}`} />
                                     )}
                                 </button>
 

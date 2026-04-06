@@ -1,8 +1,10 @@
 package com.smartfarm.api.service;
 
 import com.smartfarm.api.dto.UserDto;
+import com.smartfarm.api.entity.Role;
 import com.smartfarm.api.entity.User;
 import com.smartfarm.api.mapper.UserMapper;
+import com.smartfarm.api.repository.RoleRepository;
 import com.smartfarm.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,13 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final UserMapper userMapper;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.userMapper = userMapper;
     }
 
@@ -51,5 +55,14 @@ public class UserService {
             return false;
         userRepository.deleteById(id);
         return true;
+    }
+
+    public Optional<UserDto> updateRole(Integer id, Integer roleId) {
+        return userRepository.findById(id).map(user -> {
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+            user.setRole(role);
+            return userMapper.toDto(userRepository.save(user));
+        });
     }
 }

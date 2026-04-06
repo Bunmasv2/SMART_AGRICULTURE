@@ -20,6 +20,7 @@ const Register = lazy(() => import('../pages/auth/Register'));
 const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
 const FertilizerManagement = lazy(() => import('../pages/inventory/FertilizerManagement'));
 const PesticideManagement = lazy(() => import('../pages/inventory/PesticideManagement'));
+const UserManagement = lazy(() => import('../pages/admin/UserManagement'));
 
 const AppRoutes = () => {
     return (
@@ -51,6 +52,8 @@ const AppRoutes = () => {
 
                             <Route path="/ai-assistant" element={<AIAssistant />} />
                             <Route path="/ai-assistant/:batchId" element={<AIAssistant />} />
+
+                            <Route path="/admin/users" element={<UserManagement />} />
 
                             <Route path="/settings" element={<Settings />} />
                         </Route>

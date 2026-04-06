@@ -7,12 +7,12 @@ import {
     PencilIcon,
     TrashIcon as HeroTrash,
 } from '@heroicons/react/24/outline';
-import { 
-    LeafIcon, 
-    ClockIcon, 
-    LayersIcon, 
-    ClipboardListIcon, 
-    BoxIcon 
+import {
+    LeafIcon,
+    ClockIcon,
+    LayersIcon,
+    ClipboardListIcon,
+    BoxIcon
 } from 'lucide-react';
 
 import type { StageBase } from '../../models/Stage';
@@ -90,26 +90,31 @@ function StageTimeline({
                     return (
                         <div key={stage.stageId} className="relative group">
                             {/* Dot */}
-                            <div 
+                            <div
                                 className="absolute -left-[41px] top-4 w-4 h-4 rounded-full border-4 border-white shadow-sm z-10"
                                 style={{ backgroundColor: col.dot }}
                             />
 
                             {/* Stage Card */}
                             <div className="rounded-2xl border p-5 transition-all group-hover:shadow-md"
-                                 style={{ backgroundColor: col.bg, borderColor: `${col.border}30` }}>
-                                
+                                style={{ backgroundColor: col.bg, borderColor: `${col.border}30` }}>
+
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
-                                              style={{ backgroundColor: `${col.dot}20`, color: col.text }}>
+                                            style={{ backgroundColor: `${col.dot}20`, color: col.text }}>
                                             Giai đoạn {i + 1}: {stage.startDay} → {stage.endDay}
                                         </span>
                                         <h3 className="font-black text-lg mt-1" style={{ color: col.text }}>{stage.stageName}</h3>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => onEditStage(stage)} className="p-1.5 hover:bg-white/50 rounded-lg"><PencilIcon className="h-4 w-4 text-slate-500" /></button>
-                                        <button onClick={() => onDeleteStage(stage.stageId)} className="p-1.5 hover:bg-red-50 rounded-lg"><HeroTrash className="h-4 w-4 text-red-400" /></button>
+                                        {/* @ts-ignore */}
+                                        {JSON.parse(localStorage.getItem('user') || '{}').roleId !== 3 && (
+                                            <>
+                                                <button onClick={() => onEditStage(stage)} className="p-1.5 hover:bg-white/50 rounded-lg"><PencilIcon className="h-4 w-4 text-slate-500" /></button>
+                                                <button onClick={() => onDeleteStage(stage.stageId)} className="p-1.5 hover:bg-red-50 rounded-lg"><HeroTrash className="h-4 w-4 text-red-400" /></button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -119,12 +124,15 @@ function StageTimeline({
                                         <h4 className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-1">
                                             <ClipboardListIcon className="h-3 w-3" /> Công việc mẫu
                                         </h4>
-                                        <button 
-                                            onClick={() => onAddTask(stage.stageId)}
-                                            className="text-[10px] font-bold text-emerald-600 bg-white px-2 py-1 rounded-lg border border-emerald-100 shadow-sm hover:bg-emerald-50"
-                                        >
-                                            + Thêm việc
-                                        </button>
+                                        {/* @ts-ignore */}
+                                        {JSON.parse(localStorage.getItem('user') || '{}').roleId !== 3 && (
+                                            <button
+                                                onClick={() => onAddTask(stage.stageId)}
+                                                className="text-[10px] font-bold text-emerald-600 bg-white px-2 py-1 rounded-lg border border-emerald-100 shadow-sm hover:bg-emerald-50"
+                                            >
+                                                + Thêm việc
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="grid gap-2">
@@ -144,8 +152,13 @@ function StageTimeline({
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover/item:opacity-100">
-                                                    <button onClick={() => onEditTask(tt, stage.stageId)} className="p-1 text-slate-400 hover:text-emerald-600"><PencilIcon className="h-3 w-3" /></button>
-                                                    <button onClick={() => onDeleteTask(tt.taskTmpId ?? 1)} className="p-1 text-slate-400 hover:text-red-500"><HeroTrash className="h-3 w-3" /></button>
+                                                    {/* @ts-ignore */}
+                                                    {JSON.parse(localStorage.getItem('user') || '{}').roleId !== 3 && (
+                                                        <>
+                                                            <button onClick={() => onEditTask(tt, stage.stageId)} className="p-1 text-slate-400 hover:text-emerald-600"><PencilIcon className="h-3 w-3" /></button>
+                                                            <button onClick={() => onDeleteTask(tt.taskTmpId ?? 1)} className="p-1 text-slate-400 hover:text-red-500"><HeroTrash className="h-3 w-3" /></button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -161,6 +174,7 @@ function StageTimeline({
 }
 
 export default function GrowthProcessDetail() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [process, setProcess] = useState<ProcessDetail | null>(null);
@@ -169,7 +183,7 @@ export default function GrowthProcessDetail() {
     // Modal States
     const [stageModalOpen, setStageModalOpen] = useState(false);
     const [taskModalOpen, setTaskModalOpen] = useState(false);
-    
+
     // Selection States
     const [editStage, setEditStage] = useState<StageBase | null>(null);
     const [editTask, setEditTask] = useState<TaskTemplate | null>(null);
@@ -223,12 +237,14 @@ export default function GrowthProcessDetail() {
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Mã quy trình: #{process.processId}</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => { setEditStage(null); setStageModalOpen(true); }}
-                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-tighter flex items-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-100 active:scale-95 transition-all"
-                >
-                    <PlusIcon className="h-4 w-4 stroke-[3px]" /> Thêm giai đoạn
-                </button>
+                {user.roleId !== 3 && (
+                    <button
+                        onClick={() => { setEditStage(null); setStageModalOpen(true); }}
+                        className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-tighter flex items-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-100 active:scale-95 transition-all"
+                    >
+                        <PlusIcon className="h-4 w-4 stroke-[3px]" /> Thêm giai đoạn
+                    </button>
+                )}
             </div>
 
             {/* Scrollable Content */}

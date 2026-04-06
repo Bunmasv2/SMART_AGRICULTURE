@@ -21,6 +21,7 @@ interface TaskDto {
 }
 
 export default function TaskManagement() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const [activeTab, setActiveTab] = useState<'workflow' | 'history'>('workflow');
     const [tasks, setTasks] = useState<TaskDto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,7 +44,11 @@ export default function TaskManagement() {
 
     const markAsCompleted = async (id: number) => {
         try {
-            await axios.put(`${API_BASE}/tasks/${id}/complete`);
+            await axios.put(`${API_BASE}/tasks/${id}/complete`, null, {
+                headers: {
+                    'X-Role-Id': user.roleId
+                }
+            });
             fetchTasks(); // Reload danh sách sau khi hoàn thành
         } catch (error: any) {
             console.error("Lỗi cập nhật:", error);
@@ -116,6 +121,7 @@ export default function TaskManagement() {
                                 <TaskCard
                                     key={task.taskId}
                                     task={task}
+                                    userRole={user.roleId}
                                     onComplete={() => markAsCompleted(task.taskId)}
                                 />
                             ))
@@ -134,6 +140,7 @@ export default function TaskManagement() {
                                 <TaskCard
                                     key={task.taskId}
                                     task={task}
+                                    userRole={user.roleId}
                                 />
                             ))
                         )}
@@ -145,7 +152,7 @@ export default function TaskManagement() {
 }
 
 // ─── Sub-component TaskCard ────────────────────────────────────────────────────────
-function TaskCard({ task, onComplete }: { task: TaskDto, onComplete?: () => void }) {
+function TaskCard({ task, onComplete, userRole }: { task: TaskDto, onComplete?: () => void, userRole?: number }) {
     const todayStr = new Date().toLocaleString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).split(',')[0];
     const isOverdue = task.status === 'PENDING' && task.plannedDate < todayStr;
 
@@ -184,7 +191,7 @@ function TaskCard({ task, onComplete }: { task: TaskDto, onComplete?: () => void
                     {task.status === 'COMPLETED' ? `XONG NGÀY: ${task.actualDate}` : `HẠN CHÓT: ${task.plannedDate}`}
                 </div>
 
-                {task.status === 'PENDING' && (
+                {task.status === 'PENDING' && userRole === 3 && (
                     <button
                         onClick={onComplete}
                         className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95 flex items-center gap-2">

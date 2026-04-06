@@ -77,4 +77,24 @@ public class UserController {
                     .body(ApiResponse.error(500, e.getMessage()));
         }
     }
+
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<ApiResponse<UserDto>> updateRole(
+            @PathVariable Integer id,
+            @RequestParam Integer roleId,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer currentRoleId) {
+        if (currentRoleId != null && currentRoleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền đổi role"));
+        }
+        try {
+            return userService.updateRole(id, roleId)
+                    .map(data -> ResponseEntity.ok(ApiResponse.success(data, "Role updated successfully")))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(ApiResponse.notFound("User not found with id: " + id)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(500, e.getMessage()));
+        }
+    }
 }

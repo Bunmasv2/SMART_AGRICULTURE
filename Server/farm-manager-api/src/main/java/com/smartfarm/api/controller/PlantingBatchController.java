@@ -45,7 +45,13 @@ public class PlantingBatchController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PlantingBatchDto>> create(@RequestBody PlantingBatchDto dto) {
+    public ResponseEntity<ApiResponse<PlantingBatchDto>> create(
+            @RequestBody PlantingBatchDto dto,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền tạo lô canh tác mới ạ!"));
+        }
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(plantingBatchService.create(dto), "PlantingBatch created successfully"));
@@ -56,8 +62,14 @@ public class PlantingBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(@PathVariable Integer id,
-            @RequestBody PlantingBatchDto dto) {
+    public ResponseEntity<ApiResponse<PlantingBatchDto>> update(
+            @PathVariable Integer id,
+            @RequestBody PlantingBatchDto dto,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền cập nhật thông tin lô ạ!"));
+        }
         try {
             return plantingBatchService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "PlantingBatch updated successfully")))
@@ -70,7 +82,13 @@ public class PlantingBatchController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable Integer id,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền xóa lô canh tác ạ!"));
+        }
         try {
             if (plantingBatchService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "PlantingBatch deleted successfully"));
@@ -84,7 +102,13 @@ public class PlantingBatchController {
     }
 
     @DeleteMapping("/bulk-delete")
-    public ResponseEntity<ApiResponse<Void>> deleteMultiple(@RequestBody List<Integer> ids) {
+    public ResponseEntity<ApiResponse<Void>> deleteMultiple(
+            @RequestBody List<Integer> ids,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền xóa hàng loạt lô ạ!"));
+        }
         try {
             if (ids == null || ids.isEmpty()) {
                 return ResponseEntity.badRequest()

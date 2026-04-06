@@ -46,7 +46,13 @@ public class GrowthProcessController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<GrowthProcessDto>> create(@RequestBody GrowthProcessDto dto) {
+    public ResponseEntity<ApiResponse<GrowthProcessDto>> create(
+            @RequestBody GrowthProcessDto dto,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền tạo quy trình"));
+        }
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(growthProcessService.create(dto), "GrowthProcess created successfully"));
@@ -57,8 +63,14 @@ public class GrowthProcessController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(@PathVariable Integer id,
-            @RequestBody GrowthProcessDto dto) {
+    public ResponseEntity<ApiResponse<GrowthProcessDto>> update(
+            @PathVariable Integer id,
+            @RequestBody GrowthProcessDto dto,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền cập nhật quy trình"));
+        }
         try {
             return growthProcessService.update(id, dto)
                     .map(data -> ResponseEntity.ok(ApiResponse.success(data, "GrowthProcess updated successfully")))
@@ -71,7 +83,13 @@ public class GrowthProcessController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable Integer id,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền xóa quy trình"));
+        }
         try {
             if (growthProcessService.deleteById(id)) {
                 return ResponseEntity.ok(ApiResponse.success(null, "GrowthProcess deleted successfully"));
@@ -85,7 +103,13 @@ public class GrowthProcessController {
     }
 
     @DeleteMapping("/bulk-delete")
-    public ResponseEntity<ApiResponse<Void>> deleteBulk(@RequestBody List<Integer> ids) {
+    public ResponseEntity<ApiResponse<Void>> deleteBulk(
+            @RequestBody List<Integer> ids,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId > 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Chỉ Admin mới có quyền xóa quy trình"));
+        }
         try {
             int deletedCount = growthProcessService.deleteByIds(ids);
 

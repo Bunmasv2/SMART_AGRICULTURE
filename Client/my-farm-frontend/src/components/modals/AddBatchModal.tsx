@@ -28,6 +28,8 @@ export default function AddBatchModal({ isOpen, onClose, onSuccess }: AddBatchMo
         status: 'ACTIVE'
     });
 
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -73,6 +75,10 @@ export default function AddBatchModal({ isOpen, onClose, onSuccess }: AddBatchMo
                 processId: Number(formData.processId),
                 areaM2: Number(formData.areaM2),
                 cropCount: Number(formData.cropCount)
+            }, {
+                headers: {
+                    'X-Role-Id': user.roleId
+                }
             });
             onSuccess();
             onClose();

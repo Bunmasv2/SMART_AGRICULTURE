@@ -5,9 +5,10 @@ type StageProgressProps = {
     stages: StageBase[],
     totalDays: number
     currentDay: number
+    completedStageIds?: number[]
 }
 
-export default function StageProgressBar({ stages, totalDays, currentDay }: StageProgressProps) {
+export default function StageProgressBar({ stages, totalDays, currentDay, completedStageIds }: StageProgressProps) {
     const progressPercent = Math.min((currentDay / totalDays) * 100, 100);
 
     return (
@@ -23,8 +24,8 @@ export default function StageProgressBar({ stages, totalDays, currentDay }: Stag
                     {stages.map((stage) => {
                         const config = STAGE_CONFIG[stage.stageName] || STAGE_CONFIG['default'];
 
-                        const isDone = currentDay > stage.endDay;
-                        const isActive = currentDay >= stage.startDay && currentDay <= stage.endDay;
+                        const isDone = currentDay > stage.endDay || completedStageIds?.includes(stage.stageId);
+                        const isActive = currentDay >= stage.startDay && currentDay <= stage.endDay && !isDone;
 
                         return (
                             <div key={stage.stageId} className="relative flex flex-col items-center">
@@ -38,9 +39,17 @@ export default function StageProgressBar({ stages, totalDays, currentDay }: Stag
                                         borderColor: isDone || isActive ? config.color : '#e2e8f0',
                                     }}
                                 >
-                                    <span className="text-lg">
+                                    <span className={`text-lg ${isDone ? 'opacity-0' : ''}`}>
                                         {config.icon}
                                     </span>
+
+                                    {isDone && (
+                                        <div className="absolute inset-0 flex items-center justify-center text-white font-bold bg-emerald-500 rounded-full animate-in fade-in zoom-in duration-300">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    )}
 
                                     {isActive && (
                                         <div

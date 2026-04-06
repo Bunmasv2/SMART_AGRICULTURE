@@ -21,6 +21,7 @@ const COLORS: Record<string, string> = {
 export default function BatchList() {
     const [gridApi, setGridApi] = useState<GridApi | null>(null);
     const [selectedCount, setSelectedCount] = useState(0);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const [batches, setBatches] = useState<Batch[] | null>()
     const columnDefs = [
         {
@@ -76,7 +77,10 @@ export default function BatchList() {
         if (window.confirm(`Anh có chắc chắn muốn xóa ${selectedIds.length} lô đã chọn không?`)) {
             try {
                 await axios.delete('http://localhost:8080/api/planting-batches/bulk-delete', {
-                    data: selectedIds
+                    data: selectedIds,
+                    headers: {
+                        'X-Role-Id': user.roleId
+                    }
                 });
 
                 const updatedBatches = batches.filter(
@@ -127,26 +131,30 @@ export default function BatchList() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleDelete}
-                            disabled={selectedCount === 0}
-                            className={`px-5 py-2.5 rounded-xl font-bold transition-all shadow-md flex items-center gap-2 text-sm
-                                ${selectedCount > 0
-                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-100 active:scale-95'
-                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}
-                            `}
-                        >
-                            <TrashIcon className="h-4 w-4 stroke-[2.5px]" />
-                            <span className="text-[11px] font-bold uppercase tracking-tighter">Xóa lô</span>
-                        </button>
+                        {user.roleId <= 2 && (
+                            <>
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={selectedCount === 0}
+                                    className={`px-5 py-2.5 rounded-xl font-bold transition-all shadow-md flex items-center gap-2 text-sm
+                                        ${selectedCount > 0
+                                            ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-100 active:scale-95'
+                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}
+                                    `}
+                                >
+                                    <TrashIcon className="h-4 w-4 stroke-[2.5px]" />
+                                    <span className="text-[11px] font-bold uppercase tracking-tighter">Xóa lô</span>
+                                </button>
 
-                        <button
-                            onClick={() => setIsModalOpen(true)} // Mở modal khi click
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-100 flex items-center gap-2 active:scale-95 text-sm"
-                        >
-                            <PlusIcon className="h-4 w-4 stroke-[3px]" />
-                            <span className="text-[11px] font-bold uppercase tracking-tighter">Tạo lô mới</span>
-                        </button>
+                                <button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-100 flex items-center gap-2 active:scale-95 text-sm"
+                                >
+                                    <PlusIcon className="h-4 w-4 stroke-[3px]" />
+                                    <span className="text-[11px] font-bold uppercase tracking-tighter">Tạo lô mới</span>
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
 

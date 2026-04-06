@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,7 +66,13 @@ public class TaskController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<TaskDto>> updateStatus(
             @PathVariable Integer id,
-            @RequestParam String status) {
+            @RequestParam String status,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+
+        if (roleId != null && roleId <= 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Admin không được phép thực hiện (tích) nhiệm vụ"));
+        }
 
         Optional<TaskDto> result = taskService.updateStatus(id, status);
 
@@ -128,7 +135,13 @@ public class TaskController {
      * PUT /api/tasks/{id}/complete
      */
     @PutMapping("/{id}/complete")
-    public ResponseEntity<ApiResponse<TaskDto>> markAsCompleted(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<TaskDto>> markAsCompleted(
+            @PathVariable Integer id,
+            @RequestHeader(value = "X-Role-Id", required = false) Integer roleId) {
+        if (roleId != null && roleId <= 2) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Admin không được phép thực hiện (tích) nhiệm vụ"));
+        }
         try {
             TaskDto completedTask = taskService.markTaskAsCompleted(id);
             return ResponseEntity.ok(ApiResponse.success(completedTask, "Task marked as completed"));
